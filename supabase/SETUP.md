@@ -17,11 +17,11 @@ Do this once. Takes about 10 minutes.
 2. Open `supabase/schema.sql` from this project, copy the whole file, paste it in, click **Run**.
 3. You should see "Success. No rows returned."
 
-## 3. (Optional) Load your existing 6 properties
+## 3. (Optional) Load your existing 5 properties
 
 1. Open `supabase/seed-existing-properties.sql`, replace `YOUR-DOMAIN` near the top with your actual live domain (e.g. `dgssrealty.pages.dev` or your custom domain).
 2. Paste the whole file into a new SQL Editor query, click **Run**.
-3. Go to **Table Editor → properties** — you should see all 6 listed.
+3. Go to **Table Editor → properties** — you should see all 5 listed.
 
 ## 4. Get your project keys
 
@@ -47,9 +47,9 @@ You can add more admin users the same way later if needed (e.g. for a team membe
 ## 7. Test it
 
 1. Visit `/admin/login.html` on your deployed site, log in.
-2. You should land on the dashboard showing your 6 properties.
+2. You should land on the dashboard showing your 5 properties.
 3. Visit your normal homepage — properties should still load exactly as before (now coming live from the database instead of the hardcoded list).
 
 ## If something looks broken
 
-The public site is built to **fail safe**: if Supabase isn't reachable or isn't configured yet, it automatically falls back to showing the original 6 hardcoded properties, so your live site never goes blank. Check the browser console (F12) for a message starting with "Supabase" if properties aren't loading from the database — that'll tell you what's misconfigured.
+The public site is built to **fail safe**: if Supabase isn't reachable or isn't configured yet, it automatically falls back to showing the original 5 hardcoded properties, so your live site never goes blank. Check the browser console (F12) for a message starting with "Supabase" if properties aren't loading from the database — that'll tell you what's misconfigured.

@@ -12,8 +12,8 @@
    anywhere in frontend code — that key bypasses RLS entirely.
    ========================================================================== */
 
-const SUPABASE_URL = "https://dpkjqqcuzslycmvagzes.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_8VZUP0-AOBek4rhlR6NJ1A__S-B7ILQ";
+const SUPABASE_URL = "https://uiirwgzyuhxyerakvzzf.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY"; // <-- paste your dgss-realty project's anon/publishable key here
 // Loaded via the CDN script tag in index.html / admin pages:
 // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 //

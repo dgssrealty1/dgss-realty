@@ -7,7 +7,7 @@
 -- =====================================================================
 
 -- NOTE ON IMAGES: this seed points image URLs at your live site
--- (replace YOUR-DOMAIN below with your real Cloudflare Pages domain)
+-- (pointed at dgssrealty.com — update if your live domain differs)
 -- rather than Supabase Storage, since these image files already exist
 -- there and there's no need to re-upload them just to get the CMS
 -- working. Going forward, new properties you add through the admin
@@ -18,7 +18,7 @@
 
 do $$
 declare
-  base_url text := 'https://YOUR-DOMAIN.pages.dev'; -- <-- replace with your real domain
+  base_url text := 'https://dgssrealty.com';
   v_id uuid;
 begin
 
