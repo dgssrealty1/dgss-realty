@@ -139,6 +139,105 @@ let PROPERTIES = [
   */
 ];
 
+/* ==========================================================================
+   FOUNDER CONTENT (admin-managed)
+   ------------------------------------------------------------------------
+   The founder's name, designation, location, experience line, bio and
+   quote all live in the `settings` singleton row so they can be edited
+   from Admin → Homepage without touching code. Nothing here is
+   hard-coded in JS: the designation in particular is read straight from
+   the database, so it can be changed to "Founder", "Realty Advisor",
+   "Founder & Realty Advisor" or anything else at any time.
+
+   Same safe pattern as properties/testimonials: if Supabase isn't
+   configured, the fetch fails, or a given field is blank, the existing
+   markup in index.html is simply left untouched — the section can never
+   end up blank or half-empty.
+   ========================================================================== */
+async function loadFounderFromSupabase() {
+  if (!window.supabaseClient) return; // static markup stands as-is
+
+  try {
+    const { data, error } = await window.supabaseClient
+      .from("settings")
+      .select("company_name, founder_name, founder_designation, founder_location, founder_experience, founder_credential_line, founder_bio_intro, founder_bio_top, founder_bio_bottom, founder_quote, founder_photo_url")
+      .eq("id", 1)
+      .single();
+
+    if (error || !data) return; // keep whatever is already in the markup
+
+    // Only ever overwrite an element when there's a real value for it —
+    // a blank/missing column leaves the existing content alone.
+    const setText = (selector, value) => {
+      if (!value) return;
+      document.querySelectorAll(selector).forEach(el => { el.textContent = value; });
+    };
+
+    const name = data.founder_name;
+    const designation = data.founder_designation;
+    const company = data.company_name;
+
+    setText("[data-founder-name]", name);
+    setText("[data-founder-designation]", designation);
+    setText("[data-founder-location]", data.founder_location);
+    setText("[data-founder-experience]", data.founder_experience);
+    setText("[data-founder-credential-line]", data.founder_credential_line);
+    setText("[data-founder-bio-intro]", data.founder_bio_intro);
+    setText("[data-founder-quote]", data.founder_quote);
+
+    // Designation is shown in two combined forms elsewhere on the page —
+    // both are composed here rather than stored separately, so changing
+    // the designation once updates every occurrence consistently.
+    if (designation) {
+      setText("[data-founder-designation-comma]", company ? `${designation}, ${company}` : designation);
+      setText("[data-founder-designation-dash]", company ? `${designation} – ${company}` : designation);
+    }
+
+    // Monogram fallback (shown only if the photo fails to load) follows
+    // the name so it never shows stale initials.
+    if (name) {
+      const initials = name.split(" ").filter(Boolean).slice(0, 2)
+        .map(w => w[0].toUpperCase()).join("");
+      if (initials) setText("[data-founder-monogram]", initials);
+    }
+
+    // Photo: update both the <img> and its sibling <source> so the
+    // <picture> element doesn't keep serving the old file, and refresh
+    // alt text to match the current name/designation.
+    if (data.founder_photo_url) {
+      document.querySelectorAll("[data-founder-photo]").forEach(img => {
+        img.src = data.founder_photo_url;
+        const picture = img.closest("picture");
+        if (picture) {
+          picture.querySelectorAll("source").forEach(s => { s.srcset = data.founder_photo_url; });
+        }
+      });
+    }
+    if (name) {
+      const altText = designation ? `${name}, ${designation} of ${company || "DGSS Realty"}` : name;
+      document.querySelectorAll("[data-founder-photo]").forEach(img => { img.alt = altText; });
+    }
+
+    // Bio body: each field is a plain textarea in admin where blank
+    // lines separate paragraphs, rendered back into the same <p>
+    // structure the design already uses.
+    const setParagraphs = (selector, value) => {
+      if (!value) return;
+      const wrap = document.querySelector(selector);
+      if (!wrap) return;
+      const paras = value.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+      if (!paras.length) return;
+      wrap.innerHTML = paras.map(p => `<p>${p}</p>`).join("");
+    };
+    setParagraphs("[data-founder-bio-top]", data.founder_bio_top);
+    setParagraphs("[data-founder-bio-bottom]", data.founder_bio_bottom);
+
+    console.info("Loaded founder content from Supabase.");
+  } catch (err) {
+    console.warn("Could not load founder content from Supabase — showing existing founder content instead.", err);
+  }
+}
+
 /* Testimonials are static markup directly in index.html now (see the
    Testimonials section) rather than JS-rendered, since it's a fixed
    3-card grid rather than a carousel — simpler to hand-edit later when
@@ -1185,5 +1284,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   setFooterYear();
   await loadPropertiesFromSupabase(); // swaps in live data if/once it's ready
   await loadTestimonialsFromSupabase(); // same pattern — swaps in published testimonials if/once any exist
+  await loadFounderFromSupabase(); // same pattern — swaps in admin-managed founder content if/once it exists
   openPropertyFromUrl(); // runs after, so a shared link resolves against live data
 });

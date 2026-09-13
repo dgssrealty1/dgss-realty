@@ -13,23 +13,51 @@
 
 <template id="settingsFormTemplate">
   <div class="admin-card" style="padding:22px;max-width:640px;margin-bottom:18px;">
-    <h2 style="font-size:15px;margin-bottom:6px;">Hero Section</h2>
-    <p style="font-size:12.5px;color:var(--slate);margin-bottom:18px;">Editing these requires wiring the homepage hero to read from here instead of its current fixed text — see the note at the bottom of this page before relying on it.</p>
+    <h2 style="font-size:15px;margin-bottom:6px;">Founder Section</h2>
+    <p style="font-size:12.5px;color:var(--slate);margin-bottom:18px;">These control the founder's details wherever they appear on the public site — the About section and the "Meet Our Founder" section. Leave any field blank to keep the site's existing text for that item.</p>
     <form id="settingsForm" novalidate>
+      <div class="admin-field"><label>Founder Name</label><input type="text" id="s-founder_name" placeholder="e.g. D. Gopi"></div>
+      <div class="admin-field">
+        <label>Designation</label>
+        <input type="text" id="s-founder_designation" placeholder="e.g. Founder, Realty Advisor, Founder &amp; Realty Advisor">
+        <p class="admin-field-hint">Shown on its own and also combined with the company name (e.g. "Realty Advisor – DGSS Realty"). Change it any time — every place it appears updates together.</p>
+      </div>
+      <div class="admin-field"><label>Location</label><input type="text" id="s-founder_location" placeholder="e.g. K.K. Nagar, Chennai"></div>
+      <div class="admin-field"><label>Experience Badge</label><input type="text" id="s-founder_experience" placeholder="e.g. 20+ Years Experience"></div>
+      <div class="admin-field"><label>Credential Line (About section)</label><input type="text" id="s-founder_credential_line" placeholder="e.g. 20+ Years in Sales, Rentals, Leasing…"></div>
+      <div class="admin-field"><label>Founder Photo URL</label><input type="url" id="s-founder_photo_url" placeholder="Leave blank to keep the current photo"></div>
+
+      <div class="pe-section-title" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin:22px 0 12px;">Biography</div>
+      <div class="admin-field"><label>Intro Line</label><textarea id="s-founder_bio_intro" placeholder="The bold opening line of the founder bio"></textarea></div>
+      <div class="admin-field">
+        <label>Bio — first part</label>
+        <textarea id="s-founder_bio_top" style="min-height:140px;"></textarea>
+        <p class="admin-field-hint">Separate paragraphs with a blank line.</p>
+      </div>
+      <div class="admin-field">
+        <label>Bio — second part</label>
+        <textarea id="s-founder_bio_bottom" style="min-height:140px;"></textarea>
+        <p class="admin-field-hint">Appears after the highlights row. Separate paragraphs with a blank line.</p>
+      </div>
+      <div class="admin-field"><label>Founder Quote</label><textarea id="s-founder_quote"></textarea></div>
+
+      <div class="pe-section-title" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin:22px 0 12px;">Hero Section</div>
       <div class="admin-field"><label>Hero Heading</label><input type="text" id="s-hero_heading"></div>
       <div class="admin-field"><label>Hero Subheading</label><textarea id="s-hero_subheading"></textarea></div>
       <div class="admin-field"><label>CTA Button Text</label><input type="text" id="s-hero_cta_text"></div>
+
       <button type="submit" class="admin-btn admin-btn-primary" style="margin-top:6px;">Save Changes</button>
     </form>
   </div>
 
   <div class="admin-card" style="padding:18px 22px;max-width:640px;background:#FFF3DC;border-color:#F5D28A;">
-    <strong style="font-size:13px;">Not connected to the live homepage yet.</strong>
+    <strong style="font-size:13px;">What's live right now</strong>
     <p style="font-size:12.5px;color:var(--slate);margin-top:4px;">
-      Featured properties and testimonials on the homepage already come from what you Publish/Feature in
+      The <strong>Founder</strong> fields above are fully connected — saving here updates the public site straight away.
+      Featured properties and testimonials also work today via
       <a href="properties.html" style="color:var(--orange-600);font-weight:600;">Properties</a> and
-      <a href="testimonials.html" style="color:var(--orange-600);font-weight:600;">Testimonials</a> — those work today.
-      The hero heading/subheading/CTA fields above save correctly, but the public hero section still shows its original fixed text rather than reading from here — connecting that is a small follow-up change to the hero markup.
+      <a href="testimonials.html" style="color:var(--orange-600);font-weight:600;">Testimonials</a>.
+      The hero heading/subheading/CTA fields save correctly, but the public hero still shows its original fixed text — connecting that is a small follow-up change to the hero markup.
     </p>
   </div>
 </template>
@@ -41,7 +69,12 @@
 <script src="js/admin-settings-form.js" defer></script>
 <script defer>
   document.addEventListener("DOMContentLoaded", () =>
-    initSettingsForm(["hero_heading", "hero_subheading", "hero_cta_text"])
+    initSettingsForm([
+      "founder_name", "founder_designation", "founder_location", "founder_experience",
+      "founder_credential_line", "founder_photo_url",
+      "founder_bio_intro", "founder_bio_top", "founder_bio_bottom", "founder_quote",
+      "hero_heading", "hero_subheading", "hero_cta_text"
+    ])
   );
 </script>
 </body>

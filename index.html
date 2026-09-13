@@ -220,11 +220,11 @@
       <div class="about-visual reveal">
         <picture>
           <source srcset="images/founder/founder-photo.jpg" type="image/webp">
-          <img src="images/founder/founder-photo.jpg" alt="D. Gopi, Founder of DGSS Realty" width="600" height="600" loading="lazy">
+          <img src="images/founder/founder-photo.jpg" alt="D. Gopi, Founder of DGSS Realty" width="600" height="600" loading="lazy" data-founder-photo>
         </picture>
         <div class="about-founder-caption">
-          <strong>D. Gopi</strong>
-          <span>Real Estate Advisor, DGSS Realty</span>
+          <strong data-founder-name>D. Gopi</strong>
+          <span data-founder-designation-comma>Real Estate Advisor, DGSS Realty</span>
         </div>
       </div>
       <div class="about-copy reveal">
@@ -236,9 +236,9 @@
         <div class="founder-credential">
           <div class="founder-credential-bar" aria-hidden="true"></div>
           <div>
-            <strong>D. Gopi</strong>
-            <span class="role">Real Estate Advisor</span>
-            <p>20+ Years in Sales, Rentals, Leasing, Commercial Real Estate and Property Advisory.</p>
+            <strong data-founder-name>D. Gopi</strong>
+            <span class="role" data-founder-designation>Real Estate Advisor</span>
+            <p data-founder-credential-line>20+ Years in Sales, Rentals, Leasing, Commercial Real Estate and Property Advisory.</p>
           </div>
         </div>
 
@@ -318,17 +318,17 @@
       <div class="founder-layout">
         <div class="founder-simple reveal">
           <div class="founder-simple-photo">
-            <div class="monogram-fallback">DG</div>
+            <div class="monogram-fallback" data-founder-monogram>DG</div>
             <picture>
               <source srcset="images/founder/founder-photo.webp" type="image/webp">
               <img src="images/founder/founder-photo.jpg" alt="D. Gopi, Founder of DGSS Realty"
-                   loading="lazy" width="140" height="140">
+                   loading="lazy" width="140" height="140" data-founder-photo>
             </picture>
           </div>
-          <h3>D. Gopi</h3>
-          <p class="role">Real Estate Advisor – DGSS Realty</p>
-          <p class="founder-simple-location">K.K. Nagar, Chennai</p>
-          <div class="founder-simple-exp">20+ Years Experience</div>
+          <h3 data-founder-name>D. Gopi</h3>
+          <p class="role" data-founder-designation-dash>Real Estate Advisor – DGSS Realty</p>
+          <p class="founder-simple-location" data-founder-location>K.K. Nagar, Chennai</p>
+          <div class="founder-simple-exp" data-founder-experience>20+ Years Experience</div>
           <div class="founder-simple-tags">
             <span>Sales</span><span>Rentals</span><span>Leasing</span><span>Commercial Real Estate</span><span>Property Advisory</span><span>Deal Making</span>
           </div>
@@ -338,14 +338,16 @@
           <!-- Desktop-only heading block (hidden on mobile — see .founder-bio-heading CSS) -->
           <div class="founder-bio-heading">
             <p class="founder-bio-kicker">Meet The Founder</p>
-            <h3>D. Gopi</h3>
-            <p class="founder-bio-title">Real Estate Advisor – DGSS Realty</p>
+            <h3 data-founder-name>D. Gopi</h3>
+            <p class="founder-bio-title" data-founder-designation-dash>Real Estate Advisor – DGSS Realty</p>
             <span class="founder-bio-divider" aria-hidden="true"></span>
           </div>
 
-          <p class="founder-bio-intro">D. Gopi is an experienced real estate professional, deal-maker, mentor, and trusted advisor.</p>
-          <p>With more than 20 years of experience in the real estate industry, D. Gopi has built his reputation through extensive knowledge, strong relationships, and a proven track record of successful property transactions.</p>
-          <p>Over the years, he has been involved in a wide range of residential and commercial real estate transactions, including property sales, purchases, rentals, leases, and commercial deals. His experience across different segments of the market has given him a deep understanding of property, negotiation, documentation, and deal execution.</p>
+          <p class="founder-bio-intro" data-founder-bio-intro>D. Gopi is an experienced real estate professional, deal-maker, mentor, and trusted advisor.</p>
+          <div data-founder-bio-top>
+            <p>With more than 20 years of experience in the real estate industry, D. Gopi has built his reputation through extensive knowledge, strong relationships, and a proven track record of successful property transactions.</p>
+            <p>Over the years, he has been involved in a wide range of residential and commercial real estate transactions, including property sales, purchases, rentals, leases, and commercial deals. His experience across different segments of the market has given him a deep understanding of property, negotiation, documentation, and deal execution.</p>
+          </div>
 
           <!-- Desktop-only feature icons (hidden on mobile — see .founder-feature-grid CSS) -->
           <div class="founder-feature-grid" aria-hidden="true">
@@ -367,10 +369,12 @@
             </div>
           </div>
 
-          <p>Beyond transactions, D. Gopi is known for being a supportive and approachable professional. He has encouraged and motivated many young realtors and aspiring professionals, sharing his experience and helping others grow in the industry.</p>
-          <p>His philosophy is simple: build trust, create value, and grow together.</p>
-          <p>As DGSS Realty's Real Estate Advisor, D. Gopi continues to bring his two decades of experience, market knowledge, and people-first approach to every client and every property transaction.</p>
-          <blockquote class="founder-quote-block">"Real estate is not just about property. It is about people, trust, relationships, and creating the right opportunities."</blockquote>
+          <div data-founder-bio-bottom>
+            <p>Beyond transactions, D. Gopi is known for being a supportive and approachable professional. He has encouraged and motivated many young realtors and aspiring professionals, sharing his experience and helping others grow in the industry.</p>
+            <p>His philosophy is simple: build trust, create value, and grow together.</p>
+            <p>As DGSS Realty's Real Estate Advisor, D. Gopi continues to bring his two decades of experience, market knowledge, and people-first approach to every client and every property transaction.</p>
+          </div>
+          <blockquote class="founder-quote-block" data-founder-quote>"Real estate is not just about property. It is about people, trust, relationships, and creating the right opportunities."</blockquote>
         </div>
       </div>
     </div>

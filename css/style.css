@@ -629,6 +629,12 @@ header .container{display:flex;align-items:center;justify-content:space-between;
 .founder-bio-intro{font-weight:600;color:var(--navy-900);font-size:17.5px;line-height:1.55;margin-bottom:18px;}
 .founder-bio p{color:var(--ink);font-size:15.5px;line-height:1.75;margin-bottom:16px;}
 .founder-bio p:last-of-type{margin-bottom:0;}
+/* The bio body paragraphs sit inside [data-founder-bio-top] / [-bottom]
+   wrappers so they can be swapped for admin-managed copy. Those wrappers
+   make :last-of-type resolve per-wrapper, so restore the original
+   spacing: only the very last paragraph of the whole bio loses its
+   bottom margin, exactly as before. */
+.founder-bio [data-founder-bio-top] p:last-of-type{margin-bottom:16px;}
 .founder-quote-block{
   margin:28px 0 0;padding:22px 26px;border-left:4px solid var(--orange-600);
   background:var(--mist);border-radius:0 var(--radius-md) var(--radius-md) 0;
@@ -1603,6 +1609,12 @@ header .container{display:flex;align-items:center;justify-content:space-between;
 .founder-bio-intro{font-weight:600;color:var(--navy-900);font-size:17.5px;line-height:1.55;margin-bottom:18px;}
 .founder-bio p{color:var(--ink);font-size:15.5px;line-height:1.75;margin-bottom:16px;}
 .founder-bio p:last-of-type{margin-bottom:0;}
+/* The bio body paragraphs sit inside [data-founder-bio-top] / [-bottom]
+   wrappers so they can be swapped for admin-managed copy. Those wrappers
+   make :last-of-type resolve per-wrapper, so restore the original
+   spacing: only the very last paragraph of the whole bio loses its
+   bottom margin, exactly as before. */
+.founder-bio [data-founder-bio-top] p:last-of-type{margin-bottom:16px;}
 .founder-quote-block{
   margin:28px 0 0;padding:22px 26px;border-left:4px solid var(--orange-600);
   background:var(--mist);border-radius:0 var(--radius-md) var(--radius-md) 0;
