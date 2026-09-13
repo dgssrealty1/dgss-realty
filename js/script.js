@@ -142,7 +142,51 @@ let PROPERTIES = [
 /* Testimonials are static markup directly in index.html now (see the
    Testimonials section) rather than JS-rendered, since it's a fixed
    3-card grid rather than a carousel — simpler to hand-edit later when
-   swapping in real client reviews. */
+   swapping in real client reviews.
+   UPDATE: loadTestimonialsFromSupabase() below now overwrites this
+   static markup with live, published testimonials from the database
+   if/when any exist — mirroring loadPropertiesFromSupabase()'s same
+   safe pattern (Supabase not configured, fetch fails, or zero
+   published rows → the static markup above is simply left alone, so
+   the section never goes blank). */
+async function loadTestimonialsFromSupabase() {
+  if (!window.supabaseClient) return; // static markup stands as-is
+
+  try {
+    const { data, error } = await window.supabaseClient
+      .from("testimonials")
+      .select("*")
+      .eq("is_published", true)
+      .order("sort_order", { ascending: true });
+
+    if (error || !data || !data.length) return; // keep the static cards rather than showing an empty section
+
+    const grid = document.querySelector(".testimonial-grid");
+    if (!grid) return;
+
+    grid.innerHTML = data.map(t => {
+      const initials = (t.client_name || "")
+        .split(" ").filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("") || "•";
+      const roleLine = [t.client_role, t.location].filter(Boolean).join(" · ");
+      return `
+        <article class="testimonial-card reveal in">
+          <p class="testimonial-quote">"${t.review}"</p>
+          <div class="testimonial-person">
+            <span class="testimonial-avatar">${initials}</span>
+            <div>
+              <strong>${t.client_name}</strong>
+              ${roleLine ? `<span>${roleLine}</span>` : ""}
+            </div>
+          </div>
+        </article>
+      `;
+    }).join("");
+
+    console.info(`Loaded ${data.length} testimonial${data.length === 1 ? "" : "s"} from Supabase.`);
+  } catch (err) {
+    console.warn("Could not load testimonials from Supabase — showing static testimonials instead.", err);
+  }
+}
 
 /* Shared contact details used across property cards and the modal. */
 const CONTACT = {
@@ -1140,5 +1184,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   initContactForm();
   setFooterYear();
   await loadPropertiesFromSupabase(); // swaps in live data if/once it's ready
+  await loadTestimonialsFromSupabase(); // same pattern — swaps in published testimonials if/once any exist
   openPropertyFromUrl(); // runs after, so a shared link resolves against live data
 });
