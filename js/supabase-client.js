@@ -13,7 +13,7 @@
    ========================================================================== */
 
 const SUPABASE_URL = "https://uiirwgzyuhxyerakvzzf.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY"; // <-- paste your dgss-realty project's anon/publishable key here
+const SUPABASE_ANON_KEY = "sb_publishable_vmxX9w4jlsBROUKBn181hA_quVr-0ts";
 // Loaded via the CDN script tag in index.html / admin pages:
 // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 //
