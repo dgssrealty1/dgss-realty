@@ -16,7 +16,8 @@
     </div>
     <p class="admin-login-sub">Admin login</p>
 
-    <div class="admin-login-error" id="adminLoginError"></div>
+    <div class="admin-login-error" id="adminLoginError" role="alert"></div>
+    <div class="admin-login-notice" id="adminLoginNotice" role="status"></div>
 
     <form id="adminLoginForm" novalidate>
       <div class="admin-field">
@@ -27,12 +28,23 @@
         <label for="adminPassword">Password</label>
         <div class="admin-password-wrap">
           <input type="password" id="adminPassword" name="password" autocomplete="current-password" required>
-          <button type="button" class="admin-password-toggle" id="adminPasswordToggle" aria-label="Show password">
+          <button type="button" class="admin-password-toggle" id="adminPasswordToggle" aria-label="Show password" aria-controls="adminPassword">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
       </div>
       <button type="submit" class="admin-btn admin-btn-primary" style="width:100%;padding:12px;margin-top:6px;">Log In</button>
+    </form>
+    <p class="admin-login-links"><a href="#" id="forgotPasswordLink">Forgot password?</a></p>
+
+    <form id="forgotPasswordForm" novalidate hidden>
+      <p class="admin-login-help">Enter your staff email address. We'll send you a link to choose a new password.</p>
+      <div class="admin-field">
+        <label for="resetEmail">Email</label>
+        <input type="email" id="resetEmail" name="email" autocomplete="username" required>
+      </div>
+      <button type="submit" class="admin-btn admin-btn-primary" style="width:100%;padding:12px;">Send reset link</button>
+      <p class="admin-login-links"><a href="#" id="backToLoginLink">Back to login</a></p>
     </form>
   </div>
 </div>
@@ -40,14 +52,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="../js/supabase-client.js" defer></script>
 <script src="js/admin-auth.js" defer></script>
-<script defer>
-  // Wrapped in an arrow function rather than passed directly, because
-  // `defer` has no effect on inline scripts (only on scripts with a src)
-  // — this block runs immediately during parsing, before admin-auth.js
-  // (an external deferred script) has actually executed. Wrapping means
-  // initAdminLoginForm is only looked up later, once DOMContentLoaded
-  // actually fires — by which point every deferred script has run.
-  document.addEventListener("DOMContentLoaded", () => initAdminLoginForm());
-</script>
+
 </body>
 </html>

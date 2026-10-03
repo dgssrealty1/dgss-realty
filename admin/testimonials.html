@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Testimonials — DGSS Realty Admin</title>
 <link rel="stylesheet" href="css/admin.css">
-<script>window.ADMIN_PAGE_TITLE = "Testimonials"; window.ADMIN_ACTIVE_NAV = "testimonials";</script>
+<meta name="dgss-admin-page" content="Testimonials" data-nav="testimonials">
 </head>
 <body>
 
@@ -25,20 +25,22 @@
   <div id="testimonialsList"></div>
 </template>
 
-<div class="admin-modal-overlay" id="testimonialFormOverlay">
-  <div class="admin-modal" style="max-width:480px;">
+<div class="admin-modal-overlay" id="testimonialFormOverlay" aria-hidden="true">
+  <div class="admin-modal" style="max-width:480px;" role="dialog" aria-modal="true" aria-labelledby="testimonialModalTitle">
     <h3 id="testimonialModalTitle">Add Testimonial</h3>
     <form id="testimonialForm" novalidate style="margin-top:14px;">
       <input type="hidden" id="t-id">
-      <div class="admin-field"><label>Client Name <span class="req">*</span></label><input type="text" id="t-client_name" required></div>
+      <div class="admin-field"><label for="t-client_name">Client Name <span class="req">*</span></label><input type="text" id="t-client_name" maxlength="80" required></div>
       <div class="admin-form-row">
-        <div class="admin-field"><label>Role</label><input type="text" id="t-client_role" placeholder="e.g. Property Buyer"></div>
-        <div class="admin-field"><label>Location</label><input type="text" id="t-location" placeholder="e.g. Adyar"></div>
+        <div class="admin-field"><label for="t-client_role">Role</label><input type="text" id="t-client_role" maxlength="80" placeholder="e.g. Property Buyer"></div>
+        <div class="admin-field"><label for="t-location">Location</label><input type="text" id="t-location" maxlength="80" placeholder="e.g. Adyar"></div>
       </div>
-      <div class="admin-field"><label>Review <span class="req">*</span></label><textarea id="t-review" required style="min-height:110px;"></textarea></div>
+      <div class="admin-field"><label for="t-review">Review <span class="req">*</span></label><textarea id="t-review" maxlength="1200" required style="min-height:110px;"></textarea></div>
       <div class="admin-form-row">
-        <div class="admin-field"><label>Rating (1–5)</label><input type="number" id="t-rating" min="1" max="5"></div>
-        <div class="admin-field"><label>Photo URL</label><input type="url" id="t-photo_url"></div>
+        <div class="admin-field"><label for="t-rating">Rating (1–5)</label><input type="number" id="t-rating" min="1" max="5" step="1" inputmode="numeric">
+          <p class="admin-field-hint">Shown as stars. Blank = no stars.</p></div>
+        <div class="admin-field"><label for="t-photo_url">Photo URL</label><input type="url" id="t-photo_url" placeholder="https://… or /media/site-media/…">
+          <p class="admin-field-hint">Optional. Upload in Media Library → General, then Copy URL. Blank = initials.</p></div>
       </div>
       <label class="admin-checkbox" style="margin-bottom:18px;"><input type="checkbox" id="t-is_published"> Published (visible on the public site)</label>
       <div class="admin-modal-actions">

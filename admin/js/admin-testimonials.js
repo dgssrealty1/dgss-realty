@@ -2,14 +2,16 @@ let allTestimonials = [];
 let draggedTestimonialId = null;
 
 async function loadTestimonialsPage() {
-  const session = await requireAdminAuth();
+  const session = await requireAdminAuth("staff");
   if (!session) return;
   watchAuthState();
   renderAdminShell();
 
   document.getElementById("adminContent").appendChild(document.getElementById("testimonialsTemplate").content.cloneNode(true));
 
-  document.getElementById("addTestimonialBtn").addEventListener("click", () => openTestimonialForm(null));
+  const addBtn = document.getElementById("addTestimonialBtn");
+  if (adminCan("contentEditors")) addBtn.addEventListener("click", () => openTestimonialForm(null));
+  else addBtn.style.display = "none";
   document.getElementById("testimonialCancelBtn").addEventListener("click", closeTestimonialForm);
   document.getElementById("testimonialForm").addEventListener("submit", saveTestimonial);
 
@@ -31,27 +33,29 @@ function renderTestimonialsList() {
     return;
   }
 
+  const canEdit = adminCan("contentEditors");
   wrap.innerHTML = allTestimonials.map(t => `
-    <div class="admin-card" style="padding:16px 18px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;" draggable="true" data-testimonial-id="${t.id}">
+    <div class="admin-card" style="padding:16px 18px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;" draggable="${canEdit}" data-testimonial-id="${esc(t.id)}">
       <span style="cursor:grab;color:var(--slate);padding-top:4px;" title="Drag to reorder">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg>
       </span>
       <div style="flex:1;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-          <strong style="font-size:13.5px;">${t.client_name}</strong>
-          ${t.client_role ? `<span style="font-size:12px;color:var(--slate);">${t.client_role}${t.location ? " · " + t.location : ""}</span>` : ""}
+          <strong style="font-size:13.5px;">${esc(t.client_name)}</strong>
+          ${t.client_role ? `<span style="font-size:12px;color:var(--slate);">${esc(t.client_role)}${t.location ? " · " + esc(t.location) : ""}</span>` : ""}
           ${t.is_published ? '<span class="admin-badge admin-badge-green">Published</span>' : '<span class="admin-badge admin-badge-slate">Draft</span>'}
         </div>
-        <p style="font-size:13px;color:var(--ink);">${t.review}</p>
+        <p style="font-size:13px;color:var(--ink);">${esc(t.review)}</p>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-        <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-toggle-publish="${t.id}" data-current="${t.is_published}">${t.is_published ? "Unpublish" : "Publish"}</button>
-        <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-edit-testimonial="${t.id}">Edit</button>
-        <button type="button" class="admin-btn admin-btn-danger admin-btn-sm" data-delete-testimonial="${t.id}">Delete</button>
-      </div>
+      ${canEdit ? `<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+        <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-toggle-publish="${esc(t.id)}" data-current="${t.is_published}">${t.is_published ? "Unpublish" : "Publish"}</button>
+        <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-edit-testimonial="${esc(t.id)}">Edit</button>
+        ${adminCan("publishers") ? `<button type="button" class="admin-btn admin-btn-danger admin-btn-sm" data-delete-testimonial="${esc(t.id)}">Delete</button>` : ""}
+      </div>` : ""}
     </div>
   `).join("");
 
+  if (!canEdit) return;
   wrap.querySelectorAll("[data-toggle-publish]").forEach(btn =>
     btn.addEventListener("click", () => togglePublish(btn.dataset.togglePublish, btn.dataset.current !== "true"))
   );
@@ -82,10 +86,10 @@ function openTestimonialForm(id) {
       document.getElementById("t-is_published").checked = !!t.is_published;
     }
   }
-  document.getElementById("testimonialFormOverlay").classList.add("open");
+  openAdminModal(document.getElementById("testimonialFormOverlay"));
 }
 function closeTestimonialForm() {
-  document.getElementById("testimonialFormOverlay").classList.remove("open");
+  closeAdminModal(document.getElementById("testimonialFormOverlay"));
 }
 
 async function saveTestimonial(e) {
@@ -94,6 +98,14 @@ async function saveTestimonial(e) {
   const name = document.getElementById("t-client_name").value.trim();
   const review = document.getElementById("t-review").value.trim();
   if (!name || !review) { showAdminToast("Client name and review are required.", "error"); return; }
+  const ratingRaw = document.getElementById("t-rating").value.trim();
+  if (ratingRaw && !/^[1-5]$/.test(ratingRaw)) { showAdminToast("Rating must be a whole number from 1 to 5.", "error"); document.getElementById("t-rating").focus(); return; }
+  const photo = document.getElementById("t-photo_url").value.trim();
+  if (photo && !/^(https:\/\/[^\s"'<>]+|\/[A-Za-z0-9][^\s"'<>]*)$/.test(photo)) {
+    showAdminToast("Photo URL must start with https:// (or be a /media/… link from the Media Library).", "error");
+    document.getElementById("t-photo_url").focus();
+    return;
+  }
 
   const payload = {
     client_name: name,
@@ -113,7 +125,7 @@ async function saveTestimonial(e) {
     result = await window.supabaseClient.from("testimonials").insert(payload);
   }
 
-  if (result.error) { showAdminToast("Save failed: " + result.error.message, "error"); return; }
+  if (result.error) { showAdminToast("Save failed: " + friendlyError(result.error), "error"); return; }
   closeTestimonialForm();
   await refreshTestimonials();
   showAdminToast("Testimonial saved.", "success");
@@ -121,7 +133,7 @@ async function saveTestimonial(e) {
 
 async function togglePublish(id, value) {
   const { error } = await window.supabaseClient.from("testimonials").update({ is_published: value }).eq("id", id);
-  if (error) { showAdminToast("Update failed: " + error.message, "error"); return; }
+  if (error) { showAdminToast("Update failed: " + friendlyError(error), "error"); return; }
   const t = allTestimonials.find(x => x.id === id);
   if (t) t.is_published = value;
   renderTestimonialsList();
@@ -131,7 +143,7 @@ async function togglePublish(id, value) {
 async function deleteTestimonial(id) {
   if (!window.confirm("Delete this testimonial? This can't be undone.")) return;
   const { error } = await window.supabaseClient.from("testimonials").delete().eq("id", id);
-  if (error) { showAdminToast("Delete failed: " + error.message, "error"); return; }
+  if (error) { showAdminToast("Delete failed: " + friendlyError(error), "error"); return; }
   allTestimonials = allTestimonials.filter(t => t.id !== id);
   renderTestimonialsList();
   showAdminToast("Testimonial deleted.", "success");

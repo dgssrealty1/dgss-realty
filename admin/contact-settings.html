@@ -6,29 +6,62 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Contact Details — DGSS Realty Admin</title>
 <link rel="stylesheet" href="css/admin.css">
-<script>window.ADMIN_PAGE_TITLE = "Contact Details"; window.ADMIN_ACTIVE_NAV = "contact";</script>
+<meta name="dgss-admin-page" content="Contact Details" data-nav="contact">
 </head>
-<body>
+<body data-settings-fields="phone,whatsapp,email,office_address,office_hours,google_maps_url,instagram_url,facebook_url,youtube_url">
 <div id="adminShellSlot"></div>
 
 <template id="settingsFormTemplate">
-  <div class="admin-card" style="padding:22px;max-width:640px;">
-    <p style="font-size:12.5px;color:var(--slate);margin-bottom:18px;">These details are used across the whole public site — header icons, footer, WhatsApp links, and every form's confirmation message — so updating them here updates everywhere at once.</p>
+  <div class="admin-card admin-form-card">
+    <p class="admin-card-intro">The only place the website gets its contact details from: header and mobile menu icons, hero WhatsApp button, contact section, map, footer, floating WhatsApp button, every property and area page, the 404 page and search-engine data. Blank optional fields are hidden on the site.</p>
     <form id="settingsForm" novalidate>
       <div class="admin-form-row">
-        <div class="admin-field"><label>Phone</label><input type="tel" id="s-phone" placeholder="+91 00000 00000"></div>
-        <div class="admin-field"><label>WhatsApp</label><input type="tel" id="s-whatsapp" placeholder="+91 00000 00000"></div>
+        <div class="admin-field">
+        <label for="s-phone">Phone <span class="req">*</span></label>
+        <input type="tel" id="s-phone" maxlength="25" data-required data-validate="phone" placeholder="+91 98400 00000" autocomplete="tel">
       </div>
-      <div class="admin-field"><label>Email</label><input type="email" id="s-email"></div>
-      <div class="admin-field"><label>Office Address</label><textarea id="s-office_address"></textarea></div>
-      <div class="admin-field"><label>Google Maps URL</label><input type="url" id="s-google_maps_url"></div>
-      <div class="pe-section-title" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin:20px 0 12px;">Social Media</div>
+      <div class="admin-field">
+        <label for="s-whatsapp">WhatsApp <span class="req">*</span></label>
+        <input type="tel" id="s-whatsapp" aria-describedby="s-whatsapp-hint" maxlength="25" data-required data-validate="phone" placeholder="+91 98400 00000">
+        <p class="admin-field-hint" id="s-whatsapp-hint">Include the country code. Used for every WhatsApp link.</p>
+      </div>
+      </div>
+      <div class="admin-field">
+        <label for="s-email">Email <span class="req">*</span></label>
+        <input type="email" id="s-email" maxlength="254" data-required data-validate="email" autocomplete="email">
+      </div>
+      <div class="admin-field">
+        <label for="s-office_address">Office Address</label>
+        <textarea id="s-office_address" aria-describedby="s-office_address-hint" maxlength="300"></textarea>
+        <p class="admin-field-hint" id="s-office_address-hint">Shown in the contact section and footer, and used for the map. Blank hides the address and map.</p>
+      </div>
+      <div class="admin-field">
+        <label for="s-office_hours">Office Hours</label>
+        <input type="text" id="s-office_hours" aria-describedby="s-office_hours-hint" maxlength="120">
+        <p class="admin-field-hint" id="s-office_hours-hint">e.g. Mon–Sat | 9:30 AM – 7:00 PM. Blank hides it.</p>
+      </div>
+      <div class="admin-field">
+        <label for="s-google_maps_url">Google Maps Link</label>
+        <input type="url" id="s-google_maps_url" aria-describedby="s-google_maps_url-hint" data-validate="url" inputmode="url">
+        <p class="admin-field-hint" id="s-google_maps_url-hint">Your Google Maps place link (Share → Copy link). Blank = a map search for the address above.</p>
+      </div>
+      <h2 class="admin-section-title">Social Media</h2>
       <div class="admin-form-row">
-        <div class="admin-field"><label>Instagram URL</label><input type="url" id="s-instagram_url"></div>
-        <div class="admin-field"><label>Facebook URL</label><input type="url" id="s-facebook_url"></div>
+      <div class="admin-field">
+        <label for="s-instagram_url">Instagram URL</label>
+        <input type="url" id="s-instagram_url" data-validate="url" inputmode="url">
       </div>
-      <div class="admin-field"><label>YouTube URL</label><input type="url" id="s-youtube_url"></div>
-      <button type="submit" class="admin-btn admin-btn-primary" style="margin-top:6px;">Save Changes</button>
+      <div class="admin-field">
+        <label for="s-facebook_url">Facebook URL</label>
+        <input type="url" id="s-facebook_url" data-validate="url" inputmode="url">
+      </div>
+      </div>
+      <div class="admin-field">
+        <label for="s-youtube_url">YouTube URL</label>
+        <input type="url" id="s-youtube_url" aria-describedby="s-youtube_url-hint" data-validate="url" inputmode="url">
+        <p class="admin-field-hint" id="s-youtube_url-hint">Blank social links are hidden on the site.</p>
+      </div>
+      <button type="submit" class="admin-btn admin-btn-primary">Save Changes</button>
     </form>
   </div>
 </template>
@@ -38,10 +71,6 @@
 <script src="js/admin-auth.js" defer></script>
 <script src="js/admin-shell.js" defer></script>
 <script src="js/admin-settings-form.js" defer></script>
-<script defer>
-  document.addEventListener("DOMContentLoaded", () =>
-    initSettingsForm(["phone", "whatsapp", "email", "office_address", "google_maps_url", "instagram_url", "facebook_url", "youtube_url"])
-  );
-</script>
+
 </body>
 </html>

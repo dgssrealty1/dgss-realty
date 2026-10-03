@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Audit Log — DGSS Realty Admin</title>
+<link rel="stylesheet" href="css/admin.css">
+<meta name="dgss-admin-page" content="Audit Log" data-nav="audit">
+</head>
+<body>
+<div id="adminShellSlot"></div>
+
+<template id="auditTemplate">
+  <div class="admin-card admin-filter-card">
+    <div class="admin-filter-bar">
+      <label for="auditEntity" class="sr-only">Area</label>
+      <select id="auditEntity" class="admin-filter-select">
+        <option value="">Everything</option>
+        <option value="property">Properties</option>
+        <option value="lead">Leads</option>
+        <option value="settings">Settings</option>
+        <option value="testimonial">Testimonials</option>
+        <option value="staff">Staff</option>
+      </select>
+      <label for="auditAction" class="sr-only">Action</label>
+      <select id="auditAction" class="admin-filter-select"><option value="">Any action</option></select>
+    </div>
+  </div>
+  <p class="admin-card-intro">Recorded automatically by the database for every important change. Entries can't be edited or deleted from the admin panel. Personal details of enquirers are never copied here.</p>
+  <div class="admin-card admin-table-card">
+    <table class="admin-table admin-table-responsive">
+      <caption class="sr-only">Audit log</caption>
+      <thead><tr><th scope="col">When</th><th scope="col">Who</th><th scope="col">What</th><th scope="col">Item</th><th scope="col">Before → After</th></tr></thead>
+      <tbody id="auditBody"><tr><td colspan="5" class="admin-loading">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <nav class="admin-pagination" id="auditPagination" aria-label="Audit log pages"></nav>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script src="../js/supabase-client.js" defer></script>
+<script src="js/admin-auth.js" defer></script>
+<script src="js/admin-shell.js" defer></script>
+<script src="js/admin-audit.js" defer></script>
+</body>
+</html>

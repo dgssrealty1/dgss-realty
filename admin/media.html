@@ -6,20 +6,51 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Media Library — DGSS Realty Admin</title>
 <link rel="stylesheet" href="css/admin.css">
-<script>window.ADMIN_PAGE_TITLE = "Media Library"; window.ADMIN_ACTIVE_NAV = "media";</script>
+<meta name="dgss-admin-page" content="Media Library" data-nav="media">
 </head>
 <body>
 <div id="adminShellSlot"></div>
 
 <template id="mediaTemplate">
-  <div class="admin-card" style="padding:16px 20px;margin-bottom:18px;">
-    <input type="text" id="mediaSearch" placeholder="Search filenames…" style="width:100%;max-width:340px;padding:10px 14px;border:1.5px solid var(--line);border-radius:11px;">
+  <div class="pe-tabs" role="tablist" aria-label="Media categories" id="mediaTabs">
+    <button type="button" class="pe-tab active" role="tab" aria-selected="true" data-media-tab="property">Property Images</button>
+    <button type="button" class="pe-tab" role="tab" aria-selected="false" data-media-tab="branding">Branding</button>
+    <button type="button" class="pe-tab" role="tab" aria-selected="false" data-media-tab="founder">Founder</button>
+    <button type="button" class="pe-tab" role="tab" aria-selected="false" data-media-tab="homepage">Homepage</button>
+    <button type="button" class="pe-tab" role="tab" aria-selected="false" data-media-tab="general">General</button>
+    <button type="button" class="pe-tab" role="tab" aria-selected="false" data-media-tab="cleanup" id="cleanupTab" hidden>Storage clean-up</button>
   </div>
-  <p style="font-size:12.5px;color:var(--slate);margin-bottom:16px;">
-    All property photos live here, uploaded from each property's Images tab. This view is read-only for browsing/deleting — to add new images, open the property in
-    <a href="properties.html" style="color:var(--orange-600);font-weight:600;">Properties</a> and use its Images tab.
-  </p>
-  <div class="admin-image-grid" id="mediaGrid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));"></div>
+
+  <section data-media-panel="property">
+    <p class="admin-card-intro">Every listing photo. Photos are uploaded from each property's <strong>Images</strong> tab (they belong to that property); here you can find, check and remove them.</p>
+    <div class="admin-filter-bar" style="margin-bottom:14px;">
+      <label for="mediaSearch" class="sr-only">Search property photos</label>
+      <input type="search" id="mediaSearch" class="admin-filter-input" placeholder="Search by property or file name…">
+      <label class="admin-checkbox"><input type="checkbox" id="mediaFeaturedOnly"> Featured photos only</label>
+    </div>
+    <div class="admin-image-grid admin-media-grid" id="mediaGrid"></div>
+    <div class="admin-pagination" id="mediaMore"></div>
+  </section>
+
+  <section data-media-panel="assets" hidden>
+    <p class="admin-card-intro" id="assetIntro"></p>
+    <label class="admin-dropzone" id="assetDropzone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div style="font-weight:700;font-size:13.5px;">Upload images (drag &amp; drop or click)</div>
+      <div class="admin-subtext">JPG, PNG, WebP or AVIF, up to 5MB each.</div>
+      <input type="file" id="assetFileInput" accept="image/jpeg,image/png,image/webp,image/avif" multiple aria-label="Choose images to upload">
+    </label>
+    <div class="admin-filter-bar" style="margin:14px 0;">
+      <label for="assetSearch" class="sr-only">Search</label>
+      <input type="search" id="assetSearch" class="admin-filter-input" placeholder="Search title or alt text…">
+    </div>
+    <div class="admin-image-grid admin-media-grid" id="assetGrid"></div>
+  </section>
+
+  <section data-media-panel="cleanup" hidden>
+    <p class="admin-card-intro">Photo files that are no longer attached to any listing, or listings whose photo file is missing. Deleting a photo normally removes its file straight away; anything that failed is listed here so nothing is left behind silently.</p>
+    <div id="cleanupReport"><p class="admin-subtext">Loading…</p></div>
+  </section>
 </template>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>

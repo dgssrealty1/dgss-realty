@@ -6,17 +6,24 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Leads / Enquiries — DGSS Realty Admin</title>
 <link rel="stylesheet" href="css/admin.css">
-<script>window.ADMIN_PAGE_TITLE = "Leads / Enquiries"; window.ADMIN_ACTIVE_NAV = "leads-all";</script>
+<meta name="dgss-admin-page" content="Leads / Enquiries" data-nav="leads-all">
 </head>
 <body>
 
 <div id="adminShellSlot"></div>
 
 <template id="leadsTemplate">
-  <div class="admin-card" style="padding:18px 20px;margin-bottom:18px;">
-    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
-      <input type="text" id="leadSearch" placeholder="Search by name, phone or email…" style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--line);border-radius:11px;">
-      <select id="leadFilterSource" style="padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;">
+  <div class="admin-card admin-filter-card">
+    <div class="admin-filter-bar" role="search" aria-label="Filter enquiries">
+      <label for="leadSearch" class="sr-only">Search enquiries</label>
+      <input type="search" id="leadSearch" class="admin-filter-input" placeholder="Search name, phone, email or property…" maxlength="80">
+      <label for="leadFilterStatus" class="sr-only">Status</label>
+      <select id="leadFilterStatus" class="admin-filter-select">
+        <option value="">All Statuses</option>
+        <option>New</option><option>Contacted</option><option>Follow-up</option><option>Qualified</option><option>Closed</option><option>Not Interested</option>
+      </select>
+      <label for="leadFilterSource" class="sr-only">Source</label>
+      <select id="leadFilterSource" class="admin-filter-select">
         <option value="">All Sources</option>
         <option value="property_enquiry">Property Enquiry</option>
         <option value="list_with_us">List With Us</option>
@@ -25,26 +32,65 @@
         <option value="nri_services">NRI Services</option>
         <option value="contact_form">Contact Form</option>
       </select>
-      <select id="leadFilterStatus" style="padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;">
-        <option value="">All Statuses</option>
-        <option>New</option><option>Contacted</option><option>Follow-up</option><option>Qualified</option><option>Closed</option><option>Not Interested</option>
+      <label for="leadFilterType" class="sr-only">Lead type</label>
+      <select id="leadFilterType" class="admin-filter-select">
+        <option value="">All Lead Types</option>
+        <option value="buyer_enquiry">Buyer</option>
+        <option value="seller_lead">Seller</option>
+        <option value="joint_venture">Joint Venture</option>
+        <option value="nri_enquiry">NRI</option>
+        <option value="general_contact">General</option>
+      </select>
+      <label for="leadFilterPriority" class="sr-only">Priority</label>
+      <select id="leadFilterPriority" class="admin-filter-select">
+        <option value="">Any Priority</option>
+        <option value="urgent">Urgent</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option>
+      </select>
+      <label for="leadFilterAssigned" class="sr-only">Assigned to</label>
+      <select id="leadFilterAssigned" class="admin-filter-select">
+        <option value="">Anyone</option>
+        <option value="me">Assigned to me</option>
+        <option value="none">Unassigned</option>
+      </select>
+      <label for="leadFilterFollowUp" class="sr-only">Follow-up</label>
+      <select id="leadFilterFollowUp" class="admin-filter-select">
+        <option value="">Any follow-up</option>
+        <option value="due">Due in next 7 days</option>
+        <option value="overdue">Overdue</option>
+      </select>
+      <label for="leadFilterArchived" class="sr-only">Open or archived</label>
+      <select id="leadFilterArchived" class="admin-filter-select">
+        <option value="open">Open enquiries</option>
+        <option value="archived">Archived</option>
       </select>
     </div>
   </div>
 
-  <div class="admin-card" style="overflow-x:auto;">
-    <table class="admin-table">
+  <div class="admin-list-toolbar">
+    <span id="leadResultCount" class="admin-subtext" role="status" aria-live="polite"></span>
+    <div class="admin-list-toolbar-actions">
+      <label for="leadPageSize" class="admin-subtext">Per page</label>
+      <select id="leadPageSize" class="admin-filter-select admin-select-sm">
+        <option>20</option><option>50</option><option>100</option>
+      </select>
+      <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="exportCsvBtn">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="admin-card admin-table-card">
+    <table class="admin-table admin-table-responsive">
+      <caption class="sr-only">Enquiries</caption>
       <thead>
-        <tr><th>Name</th><th>Contact</th><th>Source</th><th>Property</th><th>Status</th><th>Date</th><th></th></tr>
+        <tr><th scope="col">Name</th><th scope="col">Contact</th><th scope="col">Source</th><th scope="col">Property</th><th scope="col">Status</th><th scope="col">Priority</th><th scope="col">Assigned</th><th scope="col">Follow-up</th><th scope="col">Received</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
       </thead>
-      <tbody id="leadsTableBody"><tr><td colspan="7" style="text-align:center;padding:40px;color:var(--slate);">Loading…</td></tr></tbody>
+      <tbody id="leadsTableBody"><tr><td colspan="10" class="admin-loading">Loading…</td></tr></tbody>
     </table>
   </div>
-  <span id="leadResultCount" style="font-size:12.5px;color:var(--slate);display:block;margin-top:14px;"></span>
+  <nav class="admin-pagination" id="leadPagination" aria-label="Enquiry pages"></nav>
 </template>
 
-<div class="admin-modal-overlay" id="leadDetailOverlay">
-  <div class="admin-modal" style="max-width:520px;">
+<div class="admin-modal-overlay" id="leadDetailOverlay" aria-hidden="true">
+  <div class="admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="leadDetailTitle">
     <div id="leadDetailBody"></div>
     <div class="admin-modal-actions" style="margin-top:20px;">
       <button type="button" class="admin-btn admin-btn-outline" id="leadDetailCloseBtn">Close</button>

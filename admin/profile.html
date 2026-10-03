@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Admin Profile — DGSS Realty Admin</title>
 <link rel="stylesheet" href="css/admin.css">
-<script>window.ADMIN_PAGE_TITLE = "Admin Profile"; window.ADMIN_ACTIVE_NAV = "profile";</script>
+<meta name="dgss-admin-page" content="Admin Profile" data-nav="profile">
 </head>
 <body>
 <div id="adminShellSlot"></div>
@@ -14,21 +14,22 @@
 <template id="profileTemplate">
   <div class="admin-card" style="padding:22px;max-width:520px;margin-bottom:18px;">
     <h2 style="font-size:15px;margin-bottom:16px;">Account</h2>
-    <div class="admin-field"><label>Email</label><input type="email" id="profileEmail" disabled style="background:var(--mist);"></div>
-    <p class="admin-field-hint">To add another admin user (e.g. a team member), go to your Supabase project → Authentication → Users → Add User.</p>
+    <div class="admin-field"><label for="profileEmail">Email</label><input type="email" id="profileEmail" disabled style="background:var(--mist);"></div>
+    <div class="admin-field"><label for="profileRole">Role</label><input type="text" id="profileRole" disabled style="background:var(--mist);"></div>
+    <p class="admin-field-hint" id="profileStaffHint">Staff accounts are managed by a super admin in Staff Management.</p>
   </div>
 
   <div class="admin-card" style="padding:22px;max-width:520px;">
     <h2 style="font-size:15px;margin-bottom:16px;">Change Password</h2>
     <form id="changePasswordForm" novalidate>
       <div class="admin-field">
-        <label>New Password</label>
-        <input type="password" id="newPassword" minlength="6" required>
-        <p class="admin-field-hint">At least 6 characters.</p>
+        <label for="newPassword">New Password</label>
+        <input type="password" id="newPassword" minlength="10" required autocomplete="new-password">
+        <p class="admin-field-hint">At least 10 characters.</p>
       </div>
       <div class="admin-field">
-        <label>Confirm New Password</label>
-        <input type="password" id="confirmPassword" minlength="6" required>
+        <label for="confirmPassword">Confirm New Password</label>
+        <input type="password" id="confirmPassword" minlength="10" required autocomplete="new-password">
       </div>
       <button type="submit" class="admin-btn admin-btn-primary">Update Password</button>
     </form>

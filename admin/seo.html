@@ -6,25 +6,53 @@
 <meta name="robots" content="noindex, nofollow">
 <title>SEO — DGSS Realty Admin</title>
 <link rel="stylesheet" href="css/admin.css">
-<script>window.ADMIN_PAGE_TITLE = "SEO"; window.ADMIN_ACTIVE_NAV = "seo";</script>
+<meta name="dgss-admin-page" content="SEO" data-nav="seo">
 </head>
-<body>
+<body data-settings-fields="home_seo_title,home_seo_description,default_seo_title,default_seo_description,default_og_image_url">
 <div id="adminShellSlot"></div>
 
 <template id="settingsFormTemplate">
-  <div class="admin-card" style="padding:22px;max-width:640px;margin-bottom:18px;">
-    <h2 style="font-size:15px;margin-bottom:6px;">Site-wide Defaults</h2>
-    <p style="font-size:12.5px;color:var(--slate);margin-bottom:18px;">Used for pages that don't have their own SEO fields set — every individual property has its own SEO title/description/keywords/slug on its Edit Property page (SEO tab), which always takes priority over these defaults.</p>
+  <div class="admin-card admin-form-card">
     <form id="settingsForm" novalidate>
-      <div class="admin-field"><label>Default SEO Title</label><input type="text" id="s-default_seo_title"></div>
-      <div class="admin-field"><label>Default Meta Description</label><textarea id="s-default_seo_description"></textarea></div>
-      <button type="submit" class="admin-btn admin-btn-primary" style="margin-top:6px;">Save Changes</button>
+      <h2 class="admin-section-title">Homepage</h2>
+      <div class="admin-field">
+        <label for="s-home_seo_title">Homepage Title</label>
+        <input type="text" id="s-home_seo_title" aria-describedby="s-home_seo_title-hint" maxlength="120">
+        <p class="admin-field-hint" id="s-home_seo_title-hint">Shown in Google and browser tabs. ~50–60 characters. Blank = the site-wide default title below.</p>
+      </div>
+      <div class="admin-field">
+        <label for="s-home_seo_description">Homepage Meta Description</label>
+        <textarea id="s-home_seo_description" aria-describedby="s-home_seo_description-hint" maxlength="300"></textarea>
+        <p class="admin-field-hint" id="s-home_seo_description-hint">~150–160 characters. Blank = the site-wide default description below.</p>
+      </div>
+      <h2 class="admin-section-title">Site-wide defaults</h2>
+      <div class="admin-field">
+        <label for="s-default_seo_title">Default SEO Title</label>
+        <input type="text" id="s-default_seo_title" aria-describedby="s-default_seo_title-hint" maxlength="120">
+        <p class="admin-field-hint" id="s-default_seo_title-hint">Used where a page has nothing more specific (the homepage when its own title is blank).</p>
+      </div>
+      <div class="admin-field">
+        <label for="s-default_seo_description">Default Meta Description</label>
+        <textarea id="s-default_seo_description" aria-describedby="s-default_seo_description-hint" maxlength="300"></textarea>
+        <p class="admin-field-hint" id="s-default_seo_description-hint">Used where a page has nothing more specific.</p>
+      </div>
+      <div class="admin-field">
+        <label for="s-default_og_image_url">Default Share Image</label>
+        <input type="text" id="s-default_og_image_url" aria-describedby="s-default_og_image_url-hint" inputmode="url" data-validate="url" data-media-picker="homepage,general,branding">
+        <p class="admin-field-hint" id="s-default_og_image_url-hint">Image shown when the homepage or a property without photos is shared on WhatsApp / Facebook (1200×630 recommended). Blank = the hero photo.</p>
+      </div>
+      <button type="submit" class="admin-btn admin-btn-primary">Save Changes</button>
     </form>
   </div>
 
-  <div class="admin-card" style="padding:22px;max-width:640px;">
-    <h2 style="font-size:15px;margin-bottom:10px;">Per-Property SEO</h2>
-    <p style="font-size:13px;color:var(--slate);">Page title, meta description, keywords, URL slug, canonical URL, and Open Graph image are all set per property — open any property in <a href="properties.html" style="color:var(--orange-600);font-weight:600;">Properties</a> and use the SEO tab.</p>
+  <div class="admin-card admin-form-card">
+    <h2 class="admin-section-title" style="margin-top:0;">How property pages get their SEO</h2>
+    <ol class="admin-steps">
+      <li>The property’s own <strong>SEO title / description / share image / canonical URL</strong> (Properties → Edit → SEO tab), if filled in.</li>
+      <li>Otherwise an automatic title and description built from the property’s real details (type, area, size, price).</li>
+      <li>The site-wide defaults above only when neither is available.</li>
+    </ol>
+    <p class="admin-card-intro" style="margin-top:10px;">Meta keywords are not used — search engines ignore them.</p>
   </div>
 </template>
 
@@ -33,10 +61,6 @@
 <script src="js/admin-auth.js" defer></script>
 <script src="js/admin-shell.js" defer></script>
 <script src="js/admin-settings-form.js" defer></script>
-<script defer>
-  document.addEventListener("DOMContentLoaded", () =>
-    initSettingsForm(["default_seo_title", "default_seo_description"])
-  );
-</script>
+
 </body>
 </html>

@@ -2,13 +2,48 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ealty-website",
   "compatibility_date": "2026-09-12",
-  "observability": {
-    "enabled": true
-  },
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // Small Worker in front of the static site. It only runs for the routes
+  // listed in run_worker_first; every other file (index.html, css, js,
+  // images, admin/*) is served directly as a static asset, exactly as before.
+  "main": "src/worker.js",
+
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS",
+    // Unknown static paths get /404.html with a real 404 status
+    // (never a silent redirect to the homepage).
+    "not_found_handling": "404-page",
+    "run_worker_first": [
+      "/",
+      "/index.html",
+      "/properties",
+      "/properties/*",
+      "/areas",
+      "/areas/*",
+      "/sitemap.xml",
+      "/media/*",
+      "/api/*"
+      // "/" and "/index.html" render the homepage from Admin settings.
+    ]
   },
-  "compatibility_flags": [
-    "nodejs_compat"
-  ]
+
+  // Public values only (the Supabase publishable key is designed to be
+  // public; RLS protects the data). Secrets are NOT stored here — set them
+  // with `npx wrangler secret put <NAME>`:
+  //   TURNSTILE_SECRET_KEY  (optional, enables Cloudflare Turnstile on forms)
+  //   LEAD_GATE_SECRET      (optional, must match private.app_secrets 'lead_gate_secret')
+  //   SUPABASE_SERVICE_ROLE_KEY (optional, enables e-mail invitations in
+  //                         Admin → Staff Management; used only server-side,
+  //                         after the database confirms a super admin)
+  "vars": {
+    "SITE_ORIGIN": "https://dgssrealty.com",
+    "SUPABASE_URL": "https://uiirwgzyuhxyerakvzzf.supabase.co",
+    "SUPABASE_ANON_KEY": "sb_publishable_vmxX9w4jlsBROUKBn181hA_quVr-0ts",
+    // Optional: public Turnstile site key. Only set together with the
+    // TURNSTILE_SECRET_KEY secret.
+    "TURNSTILE_SITE_KEY": ""
+  }
 }

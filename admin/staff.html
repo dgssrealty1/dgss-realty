@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Staff Management — DGSS Realty Admin</title>
+<link rel="stylesheet" href="css/admin.css">
+<meta name="dgss-admin-page" content="Staff Management" data-nav="staff">
+</head>
+<body>
+<div id="adminShellSlot"></div>
+
+<template id="staffTemplate">
+  <div class="admin-card admin-form-card">
+    <h2 class="admin-section-title" style="margin-top:0;">Add staff</h2>
+    <p class="admin-card-intro">Logins are handled by Supabase Auth — this page never sees or stores passwords. New people get an email invitation to choose their own password; existing accounts are given a role straight away.</p>
+    <form id="addStaffForm" novalidate>
+      <div class="admin-form-row-3">
+        <div class="admin-field">
+          <label for="staffEmail">Email <span class="req">*</span></label>
+          <input type="email" id="staffEmail" maxlength="254" required autocomplete="off">
+        </div>
+        <div class="admin-field">
+          <label for="staffName">Display name</label>
+          <input type="text" id="staffName" maxlength="80" autocomplete="off">
+        </div>
+        <div class="admin-field">
+          <label for="staffRole">Role <span class="req">*</span></label>
+          <select id="staffRole" required>
+            <option value="viewer">Viewer — read-only</option>
+            <option value="sales">Sales — leads + read properties</option>
+            <option value="editor" selected>Editor — create/edit, submit for review</option>
+            <option value="admin">Admin — approve, publish, settings, leads</option>
+            <option value="super_admin">Super Admin — everything incl. staff</option>
+          </select>
+        </div>
+      </div>
+      <div class="admin-actions-row">
+        <button type="submit" class="admin-btn admin-btn-primary" data-mode="invite">Send invitation</button>
+        <button type="button" class="admin-btn admin-btn-outline" id="addExistingBtn">Add existing account</button>
+        <span class="admin-inline-status" id="addStaffStatus" role="status"></span>
+      </div>
+    </form>
+  </div>
+
+  <div class="admin-card admin-table-card">
+    <table class="admin-table admin-table-responsive">
+      <caption class="sr-only">Staff accounts</caption>
+      <thead><tr><th scope="col">Person</th><th scope="col">Role</th><th scope="col">Access</th><th scope="col">Last sign-in</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody id="staffTableBody"><tr><td colspan="5" class="admin-loading">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <p class="admin-card-intro">Safeguards enforced by the database: only a super admin can change staff; the last active super admin can't be removed, demoted or switched off; switched-off staff lose all access immediately.</p>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script src="../js/supabase-client.js" defer></script>
+<script src="js/admin-auth.js" defer></script>
+<script src="js/admin-shell.js" defer></script>
+<script src="js/admin-staff.js" defer></script>
+</body>
+</html>

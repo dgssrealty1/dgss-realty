@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Properties — DGSS Realty Admin</title>
 <link rel="stylesheet" href="css/admin.css">
-<script>window.ADMIN_PAGE_TITLE = "Properties"; window.ADMIN_ACTIVE_NAV = "properties-all";</script>
+<meta name="dgss-admin-page" content="Properties" data-nav="properties-all">
 </head>
 <body>
 
@@ -15,24 +15,32 @@
 <template id="propertiesTemplate">
   <div class="admin-card" style="padding:18px 20px;margin-bottom:18px;">
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
-      <input type="text" id="propSearch" placeholder="Search by title or location…" style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--line);border-radius:11px;">
-      <select id="propFilterCategory" style="padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;">
+      <label for="propSearch" class="sr-only">Search properties</label>
+      <input type="search" id="propSearch" class="admin-filter-input" placeholder="Search by title or location…">
+      <label for="propFilterCategory" class="sr-only">Category</label>
+      <select id="propFilterCategory" class="admin-filter-select">
         <option value="">All Categories</option>
       </select>
-      <select id="propFilterListingType" style="padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;">
+      <label for="propFilterListingType" class="sr-only">Listing type</label>
+      <select id="propFilterListingType" class="admin-filter-select">
         <option value="">All Listing Types</option>
         <option>For Sale</option><option>For Rent</option><option>For Lease</option>
       </select>
-      <select id="propFilterStatus" style="padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;">
-        <option value="">All Statuses</option>
-        <option>Available</option><option>Under Offer</option><option>Sold</option><option>Rented</option><option>Inactive</option>
+      <label for="propFilterStatus" class="sr-only">Market status</label>
+      <select id="propFilterStatus" class="admin-filter-select">
+        <option value="">All Market Statuses</option>
+        <option>Available</option><option>Under Offer</option><option>Sold</option><option>Rented</option><option>Leased</option><option>Inactive</option>
       </select>
-      <select id="propFilterPublished" style="padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;">
-        <option value="">Published + Drafts</option>
-        <option value="published">Published only</option>
-        <option value="draft">Drafts only</option>
+      <label for="propFilterPublished" class="sr-only">Workflow stage</label>
+      <select id="propFilterPublished" class="admin-filter-select">
+        <option value="">All Stages</option>
+        <option value="draft">Draft</option>
+        <option value="under_review">Under Review</option>
+        <option value="approved">Approved (not yet live)</option>
+        <option value="published">Published</option>
       </select>
-      <select id="propSort" style="padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;">
+      <label for="propSort" class="sr-only">Sort by</label>
+      <select id="propSort" class="admin-filter-select">
         <option value="newest">Newest</option>
         <option value="oldest">Oldest</option>
         <option value="price_asc">Price: Low to High</option>
@@ -43,19 +51,20 @@
     </div>
   </div>
 
-  <div class="admin-card" style="overflow-x:auto;">
-    <table class="admin-table">
+  <div class="admin-card admin-table-card">
+    <table class="admin-table admin-table-responsive">
+      <caption class="sr-only">Properties</caption>
       <thead>
         <tr>
-          <th></th>
+          <th><span class="sr-only">Photo</span></th>
           <th>Title</th>
           <th>Category</th>
           <th>Listing</th>
           <th>Status</th>
           <th>Price</th>
           <th>Featured</th>
-          <th>Published</th>
-          <th></th>
+          <th>Stage</th>
+          <th><span class="sr-only">Actions</span></th>
         </tr>
       </thead>
       <tbody id="propertiesTableBody">
@@ -70,9 +79,9 @@
   </div>
 </template>
 
-<div class="admin-modal-overlay" id="deleteConfirmOverlay">
-  <div class="admin-modal">
-    <h3>Delete this property?</h3>
+<div class="admin-modal-overlay" id="deleteConfirmOverlay" aria-hidden="true">
+  <div class="admin-modal" role="alertdialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+    <h3 id="deleteConfirmTitle">Delete this property?</h3>
     <p>This can't be undone. All of its images will be removed too. Consider Archiving instead if you might need it later.</p>
     <div class="admin-modal-actions">
       <button type="button" class="admin-btn admin-btn-outline" id="deleteCancelBtn">Cancel</button>
@@ -85,6 +94,7 @@
 <script src="../js/supabase-client.js" defer></script>
 <script src="js/admin-auth.js" defer></script>
 <script src="js/admin-shell.js" defer></script>
+<script src="js/admin-rules.js" defer></script>
 <script src="js/admin-properties-list.js" defer></script>
 </body>
 </html>

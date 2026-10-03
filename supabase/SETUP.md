@@ -16,6 +16,7 @@ Do this once. Takes about 10 minutes.
 1. In your new project, go to **SQL Editor** (left sidebar) → **New query**.
 2. Open `supabase/schema.sql` from this project, copy the whole file, paste it in, click **Run**.
 3. You should see "Success. No rows returned."
+4. Then run `supabase/add-founder-settings.sql`, and every file in `supabase/migrations/` in order (01 → 05) — see `supabase/migrations/README.md`.
 
 ## 3. (Optional) Load your existing 5 properties
 
@@ -34,7 +35,7 @@ Do this once. Takes about 10 minutes.
 1. Open `js/supabase-client.js` in this project.
 2. Replace `YOUR_SUPABASE_PROJECT_URL` with your Project URL.
 3. Replace `YOUR_SUPABASE_ANON_KEY` with your anon key.
-4. Save, commit, push to GitHub as usual — Cloudflare Pages will redeploy automatically.
+4. Save, then deploy with `npx wrangler deploy` (GitHub pushes do not deploy on their own).
 
 ## 6. Create your admin login
 
@@ -42,7 +43,7 @@ Do this once. Takes about 10 minutes.
 2. Enter your email and a password. Leave "Auto Confirm User" checked.
 3. That's your login for `/admin/login.html`.
 
-You can add more admin users the same way later if needed (e.g. for a team member) — the system supports multiple admins out of the box.
+Creating a login is NOT enough to get into the admin panel — the account must also be on the staff list with a role (super_admin, admin, editor, sales or viewer). After the first super admin exists, add everyone else from **Admin → Staff Management** (no SQL needed). Also turn off public sign-ups (Authentication → Providers → Email → "Allow new users to sign up").
 
 ## 7. Test it
 
@@ -52,4 +53,6 @@ You can add more admin users the same way later if needed (e.g. for a team membe
 
 ## If something looks broken
 
-The public site is built to **fail safe**: if Supabase isn't reachable or isn't configured yet, it automatically falls back to showing the original 5 hardcoded properties, so your live site never goes blank. Check the browser console (F12) for a message starting with "Supabase" if properties aren't loading from the database — that'll tell you what's misconfigured.
+If Supabase can't be reached, the homepage shows **"Property listings are temporarily unavailable"** with Call and WhatsApp buttons — it never shows old or sample listings, because stale prices must not look live. Contact buttons then use the emergency defaults in `src/site-defaults.js`. If Supabase works but nothing is published, the homepage honestly says new listings are being added.
+
+All contact details, logo, social links, hero text, founder text and SEO defaults come from **Admin → Contact Details / Branding / Homepage / SEO**. Don't edit them in the HTML — the build's tests fail if contact details are hardcoded anywhere else.

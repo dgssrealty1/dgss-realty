@@ -21,10 +21,10 @@ let searchDebounceTimer = null;
 // thumbnail, fetched separately per visible row (see loadThumbnails) so a
 // list of hundreds/thousands of properties never pulls a whole gallery's
 // worth of image rows just to render a 48×36px thumbnail.
-const LIST_COLUMNS = "id, slug, title, location, category, listing_type, status, display_price, price, is_featured, is_published, is_archived, created_at, updated_at";
+const LIST_COLUMNS = "id, slug, title, location, category, listing_type, status, display_price, price, is_price_on_request, is_featured, is_published, is_archived, review_status, created_at, updated_at";
 
 async function loadPropertiesList() {
-  const session = await requireAdminAuth();
+  const session = await requireAdminAuth("staff");
   if (!session) return;
   watchAuthState();
   renderAdminShell();
@@ -34,11 +34,13 @@ async function loadPropertiesList() {
   content.appendChild(template.content.cloneNode(true));
 
   document.getElementById("propFilterCategory").innerHTML +=
-    PROPERTY_CATEGORIES.map(c => `<option>${c}</option>`).join("");
+    PROPERTY_CATEGORIES.map(c => `<option>${esc(c)}</option>`).join("");
 
   // Support the sidebar's quick-filter links, e.g. properties.html?filter=featured
   const urlFilter = new URLSearchParams(window.location.search).get("filter");
   if (urlFilter === "drafts") document.getElementById("propFilterPublished").value = "draft";
+  if (urlFilter === "review") document.getElementById("propFilterPublished").value = "under_review";
+  if (urlFilter === "published") document.getElementById("propFilterPublished").value = "published";
   window.__featuredOnly = urlFilter === "featured";
   window.__archivedOnly = urlFilter === "archived";
 
@@ -78,7 +80,7 @@ async function fetchAndRenderPage() {
   if (listingType) query = query.eq("listing_type", listingType);
   if (status) query = query.eq("status", status);
   if (published === "published") query = query.eq("is_published", true);
-  if (published === "draft") query = query.eq("is_published", false);
+  else if (published) query = query.eq("is_published", false).eq("review_status", published);
   if (search) {
     const escaped = search.replace(/[%,]/g, "");
     query = query.or(`title.ilike.%${escaped}%,location.ilike.%${escaped}%`);
@@ -117,31 +119,35 @@ async function fetchAndRenderPage() {
 function renderPropertiesTable() {
   const tbody = document.getElementById("propertiesTableBody");
 
+  const canEdit = adminCan("contentEditors");
+  const canPublish = adminCan("publishers");
+  const publishedBadge = p => { const st = propertyStage(p); return `<span class="admin-badge ${st.cls}">${esc(st.label)}</span>`; };
+
   tbody.innerHTML = currentPageRows.length
     ? currentPageRows.map(p => `
-        <tr data-row-id="${p.id}">
-          <td><div class="thumb-slot" data-thumb-slot="${p.id}" style="width:48px;height:36px;border-radius:6px;overflow:hidden;background:var(--mist);"></div></td>
-          <td><strong>${p.title}</strong><div style="font-size:11.5px;color:var(--slate);">${p.location || ""}</div></td>
-          <td>${p.category}</td>
-          <td>${p.listing_type}</td>
-          <td>${statusBadge(p.status)}</td>
-          <td>${p.display_price || "—"}</td>
-          <td>
-            <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-toggle-featured="${p.id}" data-current="${p.is_featured}">
-              ${p.is_featured ? "★ Featured" : "☆ Feature"}
-            </button>
+        <tr data-row-id="${esc(p.id)}">
+          <td data-label=""><div class="thumb-slot" data-thumb-slot="${esc(p.id)}" style="width:48px;height:36px;border-radius:6px;overflow:hidden;background:var(--mist);"></div></td>
+          <td data-label="Title"><strong>${esc(p.title)}</strong><div style="font-size:11.5px;color:var(--slate);">${esc(p.location || "")}</div></td>
+          <td data-label="Category">${esc(p.category)}</td>
+          <td data-label="Listing">${esc(p.listing_type)}</td>
+          <td data-label="Status">${statusBadge(p.status)}</td>
+          <td data-label="Price">${esc(p.is_price_on_request ? "On request" : (p.display_price || (window.DGSSRules ? window.DGSSRules.formatInr(Number(p.price), p.listing_type) : "") || "—"))}</td>
+          <td data-label="Featured">
+            ${canEdit
+              ? `<button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-toggle-featured="${esc(p.id)}" data-current="${p.is_featured}">${p.is_featured ? "★ Featured" : "☆ Feature"}</button>`
+              : (p.is_featured ? "★" : "")}
           </td>
-          <td>
-            <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-toggle-published="${p.id}" data-current="${p.is_published}">
-              ${p.is_published ? '<span class="admin-badge admin-badge-green">Published</span>' : '<span class="admin-badge admin-badge-slate">Draft</span>'}
-            </button>
+          <td data-label="Stage">
+            ${canPublish
+              ? `<button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-toggle-published="${esc(p.id)}" data-current="${p.is_published}" title="${p.is_published ? "Unpublish" : "Publish"}">${publishedBadge(p)}</button>`
+              : publishedBadge(p)}
           </td>
-          <td style="white-space:nowrap;">
-            <a href="property-edit.html?id=${p.id}" class="admin-btn admin-btn-ghost admin-btn-sm">Edit</a>
-            <a href="../index.html?property=${p.slug}" target="_blank" class="admin-btn admin-btn-ghost admin-btn-sm">Preview</a>
-            <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-duplicate="${p.id}">Duplicate</button>
-            <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-archive="${p.id}" data-current="${p.is_archived}">${p.is_archived ? "Unarchive" : "Archive"}</button>
-            <button type="button" class="admin-btn admin-btn-danger admin-btn-sm" data-delete="${p.id}">Delete</button>
+          <td data-label="Actions" class="admin-row-actions">
+            <a href="property-edit.html?id=${encodeURIComponent(p.id)}" class="admin-btn admin-btn-ghost admin-btn-sm">${canEdit ? "Edit" : "View"}</a>
+            ${p.is_published && !p.is_archived ? `<a href="/properties/${encodeURIComponent(p.slug)}/" target="_blank" rel="noopener" class="admin-btn admin-btn-ghost admin-btn-sm">View live</a>` : ""}
+            ${canEdit ? `<button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-duplicate="${esc(p.id)}">Duplicate</button>` : ""}
+            ${canPublish ? `<button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-archive="${esc(p.id)}" data-current="${p.is_archived}">${p.is_archived ? "Unarchive" : "Archive"}</button>` : ""}
+            ${canPublish ? `<button type="button" class="admin-btn admin-btn-danger admin-btn-sm" data-delete="${esc(p.id)}">Delete</button>` : ""}
           </td>
         </tr>
       `).join("")
@@ -161,29 +167,32 @@ async function loadThumbnails(propertyIds) {
   if (!propertyIds.length) return;
   const { data, error } = await window.supabaseClient
     .from("property_images")
-    .select("property_id, public_url, is_featured_image")
+    .select("property_id, public_url, storage_path, is_featured_image")
     .in("property_id", propertyIds)
     .order("is_featured_image", { ascending: false });
 
   if (error || !data) return;
 
   const firstImageByProperty = {};
+  const firsts = [];
   data.forEach(img => {
-    if (!firstImageByProperty[img.property_id]) firstImageByProperty[img.property_id] = img.public_url;
+    if (!firstImageByProperty[img.property_id]) { firstImageByProperty[img.property_id] = img; firsts.push(img); }
   });
+  await attachAdminImageUrls(firsts);
+  Object.keys(firstImageByProperty).forEach(id => { firstImageByProperty[id] = firstImageByProperty[id].displayUrl || firstImageByProperty[id].public_url; });
 
   Object.entries(firstImageByProperty).forEach(([id, url]) => {
     const slot = document.querySelector(`[data-thumb-slot="${id}"]`);
-    if (slot) slot.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
+    if (slot && safeUrl(url)) slot.innerHTML = `<img src="${safeUrl(url)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`;
   });
 }
 
 function statusBadge(status) {
   const map = {
     Available: "admin-badge-green", "Under Offer": "admin-badge-amber",
-    Sold: "admin-badge-slate", Rented: "admin-badge-slate", Inactive: "admin-badge-red"
+    Sold: "admin-badge-slate", Rented: "admin-badge-slate", Leased: "admin-badge-slate", Inactive: "admin-badge-red"
   };
-  return `<span class="admin-badge ${map[status] || "admin-badge-slate"}">${status}</span>`;
+  return `<span class="admin-badge ${map[status] || "admin-badge-slate"}">${esc(status)}</span>`;
 }
 
 function renderPagination() {
@@ -235,8 +244,15 @@ function wireRowActions() {
 // page" (e.g. unfeaturing it while the Featured filter is active), so a
 // fresh server-driven page is simpler and always correct.
 async function togglePropertyField(id, field, value) {
-  const { error } = await window.supabaseClient.from("properties").update({ [field]: value }).eq("id", id);
-  if (error) { showAdminToast("Update failed: " + error.message, "error"); return; }
+  const row = currentPageRows.find(r => r.id === id);
+  const name = row ? `"${row.title}"` : "this property";
+  const confirmText = {
+    is_published: value ? `Publish ${name}? It will be visible on the public website.` : `Unpublish ${name}? Its public page will stop working until it's published again.`,
+    is_archived: value ? `Archive ${name}? It will be removed from the website and hidden from this list.` : `Unarchive ${name}?`
+  }[field];
+  if (confirmText && !window.confirm(confirmText)) return;
+  const { error } = await window.supabaseClient.from("properties").update({ [field]: value }).eq("id", id).select("id").single();
+  if (error) { showAdminToast("Update failed: " + friendlyError(error), "error"); return; }
   showAdminToast("Updated.", "success");
   fetchAndRenderPage();
 }
@@ -251,32 +267,45 @@ async function duplicateProperty(id) {
   delete copy.created_at;
   delete copy.updated_at;
   copy.title = `${copy.title} (Copy)`;
-  copy.slug = `${copy.slug}-copy-${Date.now().toString(36)}`;
+  copy.slug = `${copy.slug}-copy`; // the database makes it unique (-copy-2, -copy-3…)
   copy.is_published = false; // duplicates land as drafts, reviewed before going live
+  copy.is_archived = false;
+  copy.is_featured = false;
+  copy.review_status = "draft";
+  delete copy.seo_keywords;
 
   const { data, error } = await window.supabaseClient.from("properties").insert(copy).select().single();
-  if (error) { showAdminToast("Duplicate failed: " + error.message, "error"); return; }
+  if (error) { showAdminToast("Duplicate failed: " + friendlyError(error), "error"); return; }
   showAdminToast("Duplicated as a draft.", "success");
   window.location.href = `property-edit.html?id=${data.id}`;
 }
 
 function openDeleteModal(id) {
   pendingDeleteId = id;
-  document.getElementById("deleteConfirmOverlay").classList.add("open");
+  openAdminModal(document.getElementById("deleteConfirmOverlay"), () => { pendingDeleteId = null; });
 }
 function closeDeleteModal() {
   pendingDeleteId = null;
-  document.getElementById("deleteConfirmOverlay").classList.remove("open");
+  closeAdminModal(document.getElementById("deleteConfirmOverlay"));
 }
 async function confirmDeleteProperty() {
   if (!pendingDeleteId) return;
-  // property_images rows cascade-delete automatically (see schema.sql's
-  // "on delete cascade"); this only removes the database rows — actual
-  // files in Storage should be cleared from the Media Library if unused.
-  const { error } = await window.supabaseClient.from("properties").delete().eq("id", pendingDeleteId);
-  if (error) { showAdminToast("Delete failed: " + error.message, "error"); closeDeleteModal(); return; }
+  const btn = document.getElementById("deleteConfirmBtn");
+  btn.disabled = true;
+  // Collect this property's uploaded files BEFORE the rows cascade away,
+  // so they can be removed from Storage too (no orphaned files).
+  const { data: imgs } = await window.supabaseClient
+    .from("property_images").select("storage_path").eq("property_id", pendingDeleteId);
+  const paths = (imgs || []).map(i => i.storage_path).filter(Boolean);
+
+  const { error, count } = await window.supabaseClient.from("properties").delete({ count: "exact" }).eq("id", pendingDeleteId);
+  btn.disabled = false;
+  if (error || count === 0) { showAdminToast("Delete failed: " + (error ? friendlyError(error) : "your role can't delete properties"), "error"); closeDeleteModal(); return; }
+  // Deleted image records queued their files; remove them now (failures
+  // stay queued for Media → Storage clean-up — never silent).
+  const cleanup = await removePropertyImageFiles(paths);
   closeDeleteModal();
-  showAdminToast("Property deleted.", "success");
+  showAdminToast(cleanup.failed ? "Property deleted. Some photo files couldn't be removed yet — see Media Library → Storage clean-up." : "Property deleted.", cleanup.failed ? "error" : "success");
   // If this was the last row on the current page (and it's not page 1),
   // step back a page rather than showing an empty page.
   if (currentPageRows.length === 1 && currentPage > 1) currentPage -= 1;

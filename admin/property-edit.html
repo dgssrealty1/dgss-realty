@@ -14,9 +14,11 @@
   .pe-panel.active{display:block;}
   .pe-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin:22px 0 12px;}
   .pe-section-title:first-child{margin-top:0;}
-  .pe-actions-bar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:14px 20px;display:flex;gap:10px;justify-content:flex-end;margin:24px -20px -20px;border-radius:0 0 var(--radius-md) var(--radius-md);}
+  .pe-actions-bar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin:24px -20px -20px;border-radius:0 0 var(--radius-md) var(--radius-md);z-index:5;}
+  .admin-image-cell{display:flex;flex-direction:column;}
+  @media (max-width:640px){.pe-actions-bar{justify-content:stretch}.pe-actions-bar .admin-btn{flex:1 1 auto}}
 </style>
-<script>window.ADMIN_PAGE_TITLE = "Add / Edit Property"; window.ADMIN_ACTIVE_NAV = "properties-add";</script>
+<meta name="dgss-admin-page" content="Add / Edit Property" data-nav="properties-add">
 </head>
 <body>
 
@@ -24,14 +26,20 @@
 
 <template id="propertyEditTemplate">
   <div class="admin-card" style="padding:20px;">
-    <div class="pe-tabs">
-      <button type="button" class="pe-tab active" data-tab="basic">Basic Details</button>
-      <button type="button" class="pe-tab" data-tab="price">Price</button>
-      <button type="button" class="pe-tab" data-tab="specs">Specifications</button>
-      <button type="button" class="pe-tab" data-tab="description">Description &amp; Features</button>
-      <button type="button" class="pe-tab" data-tab="images">Images</button>
-      <button type="button" class="pe-tab" data-tab="video">Video</button>
-      <button type="button" class="pe-tab" data-tab="seo">SEO</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <span id="propertyStateBadge" class="admin-badge admin-badge-slate" role="status">New</span>
+      <span id="mandateBadge" class="admin-badge admin-badge-red" hidden></span>
+      <span style="font-size:12.5px;color:var(--slate);">Fields marked <span class="req">*</span> are required.</span>
+    </div>
+    <div class="pe-tabs" role="tablist" aria-label="Property sections">
+      <button type="button" class="pe-tab active" role="tab" aria-selected="true" data-tab="basic">Basic Details</button>
+      <button type="button" class="pe-tab" role="tab" aria-selected="false" data-tab="price">Price</button>
+      <button type="button" class="pe-tab" role="tab" aria-selected="false" data-tab="specs">Specifications</button>
+      <button type="button" class="pe-tab" role="tab" aria-selected="false" data-tab="description">Description &amp; Features</button>
+      <button type="button" class="pe-tab" role="tab" aria-selected="false" data-tab="images">Images</button>
+      <button type="button" class="pe-tab" role="tab" aria-selected="false" data-tab="video">Video</button>
+      <button type="button" class="pe-tab" role="tab" aria-selected="false" data-tab="seo">SEO</button>
+      <button type="button" class="pe-tab" role="tab" aria-selected="false" data-tab="internal" id="internalTab" hidden>Internal</button>
     </div>
 
     <form id="propertyForm" novalidate>
@@ -39,51 +47,51 @@
       <!-- BASIC -->
       <div class="pe-panel active" data-panel="basic">
         <div class="admin-form-row">
-          <div class="admin-field"><label>Property Title <span class="req">*</span></label><input type="text" id="f-title" required></div>
-          <div class="admin-field"><label>Property Reference / ID</label><input type="text" id="f-reference_id" placeholder="Optional internal code"></div>
+          <div class="admin-field"><label for="f-title">Property Title <span class="req">*</span></label><input type="text" id="f-title" required></div>
+          <div class="admin-field"><label for="f-reference_id">Property Reference / ID</label><input type="text" id="f-reference_id" placeholder="Optional internal code"></div>
         </div>
         <div class="admin-form-row-3">
-          <div class="admin-field"><label>Category <span class="req">*</span></label>
-            <select id="f-category" required>
+          <div class="admin-field"><label for="f-category">Category <span class="req">*</span></label><select id="f-category" required>
               <option value="">Select category</option>
               <option>Apartment</option><option>Flat</option><option>Independent House</option><option>Villa</option>
               <option>Residential Plot</option><option>Land</option><option>Commercial</option><option>Office</option>
               <option>Retail</option><option>Warehouse</option><option>Industrial</option><option>Other</option>
             </select>
           </div>
-          <div class="admin-field"><label>Listing Type <span class="req">*</span></label>
-            <select id="f-listing_type" required><option value="">Select</option><option>For Sale</option><option>For Rent</option><option>For Lease</option></select>
+          <div class="admin-field"><label for="f-listing_type">Listing Type <span class="req">*</span></label><select id="f-listing_type" required><option value="">Select</option><option>For Sale</option><option>For Rent</option><option>For Lease</option></select>
           </div>
-          <div class="admin-field"><label>Status</label>
-            <select id="f-status"><option>Available</option><option>Under Offer</option><option>Sold</option><option>Rented</option><option>Inactive</option></select>
+          <div class="admin-field"><label for="f-status">Market Status</label><select id="f-status"><option>Available</option><option>Under Offer</option><option>Sold</option><option>Rented</option><option>Leased</option><option>Inactive</option></select>
           </div>
         </div>
         <div class="pe-section-title">Location</div>
         <div class="admin-form-row">
-          <div class="admin-field"><label>Location (shown on cards) <span class="req">*</span></label><input type="text" id="f-location" required></div>
-          <div class="admin-field"><label>Locality</label><input type="text" id="f-locality"></div>
+          <div class="admin-field"><label for="f-location">Location (shown on cards) <span class="req">*</span></label><input type="text" id="f-location" required></div>
+          <div class="admin-field"><label for="f-locality">Locality</label><input type="text" id="f-locality"></div>
         </div>
         <div class="admin-form-row-3">
-          <div class="admin-field"><label>City</label><input type="text" id="f-city" value="Chennai"></div>
-          <div class="admin-field"><label>State</label><input type="text" id="f-state" value="Tamil Nadu"></div>
-          <div class="admin-field"><label>Pincode</label><input type="text" id="f-pincode"></div>
+          <div class="admin-field"><label for="f-city">City</label><input type="text" id="f-city" value="Chennai"></div>
+          <div class="admin-field"><label for="f-state">State</label><input type="text" id="f-state" value="Tamil Nadu"></div>
+          <div class="admin-field"><label for="f-pincode">Pincode</label><input type="text" id="f-pincode"></div>
         </div>
-        <div class="admin-field"><label>Full Address</label><textarea id="f-full_address"></textarea></div>
+        <div class="admin-field"><label for="f-full_address">Full Address</label><textarea id="f-full_address"></textarea></div>
         <div class="admin-form-row-3">
-          <div class="admin-field"><label>Google Maps URL</label><input type="url" id="f-google_maps_url"></div>
-          <div class="admin-field"><label>Latitude</label><input type="text" id="f-latitude"></div>
-          <div class="admin-field"><label>Longitude</label><input type="text" id="f-longitude"></div>
+          <div class="admin-field"><label for="f-google_maps_url">Google Maps URL</label><input type="url" id="f-google_maps_url"></div>
+          <div class="admin-field"><label for="f-latitude">Latitude</label><input type="text" id="f-latitude"></div>
+          <div class="admin-field"><label for="f-longitude">Longitude</label><input type="text" id="f-longitude"></div>
         </div>
       </div>
 
       <!-- PRICE -->
       <div class="pe-panel" data-panel="price">
         <div class="admin-form-row">
-          <div class="admin-field"><label>Price (numeric, used for sorting)</label><input type="number" id="f-price" placeholder="e.g. 8500000"></div>
-          <div class="admin-field"><label>Display Price</label><input type="text" id="f-display_price" placeholder="e.g. ₹85 Lakhs or ₹45,000 / Month"></div>
+          <div class="admin-field"><label for="f-price">Price in ₹ (numbers only)</label><input type="number" id="f-price" min="0" step="1" inputmode="numeric" placeholder="e.g. 8500000">
+            <p class="admin-field-hint">Used for sorting, the budget filter and search-engine data. For rent/lease: monthly rent.</p></div>
+          <div class="admin-field"><label for="f-display_price">Display Price (optional)</label><input type="text" id="f-display_price" maxlength="80" placeholder="Blank = shown automatically from the price">
+            <p class="admin-field-hint">Only for wording the number can't express, e.g. “₹3 Crore per Ground”. <button type="button" class="admin-link-btn" id="suggestDisplayPrice">Fill from price</button></p></div>
         </div>
+        <div class="admin-price-check" id="priceCheck" role="status" aria-live="polite"></div>
         <div class="admin-form-row">
-          <div class="admin-field"><label>Price per Sq.ft</label><input type="number" id="f-price_per_sqft"></div>
+          <div class="admin-field"><label for="f-price_per_sqft">Price per Sq.ft</label><input type="number" id="f-price_per_sqft" min="0" step="1" inputmode="numeric"></div>
           <div class="admin-field" style="display:flex;gap:20px;align-items:center;padding-top:26px;">
             <label class="admin-checkbox"><input type="checkbox" id="f-is_negotiable"> Negotiable</label>
             <label class="admin-checkbox"><input type="checkbox" id="f-is_price_on_request"> Price on Request</label>
@@ -94,52 +102,50 @@
       <!-- SPECS -->
       <div class="pe-panel" data-panel="specs">
         <div class="admin-form-row-3">
-          <div class="admin-field"><label>Land Area</label><input type="text" id="f-land_area"></div>
-          <div class="admin-field"><label>Built-up Area</label><input type="text" id="f-builtup_area"></div>
-          <div class="admin-field"><label>Carpet Area</label><input type="text" id="f-carpet_area"></div>
+          <div class="admin-field"><label for="f-land_area">Land Area</label><input type="text" id="f-land_area"></div>
+          <div class="admin-field"><label for="f-builtup_area">Built-up Area</label><input type="text" id="f-builtup_area"></div>
+          <div class="admin-field"><label for="f-carpet_area">Carpet Area</label><input type="text" id="f-carpet_area"></div>
         </div>
         <div class="admin-form-row-3">
-          <div class="admin-field"><label>UDS</label><input type="text" id="f-uds"></div>
-          <div class="admin-field"><label>Plot Area</label><input type="text" id="f-plot_area"></div>
-          <div class="admin-field"><label>Area Unit</label>
-            <select id="f-area_unit"><option>Sq.ft</option><option>Sq.m</option><option>Ground</option><option>Cent</option><option>Acre</option></select>
+          <div class="admin-field"><label for="f-uds">UDS</label><input type="text" id="f-uds"></div>
+          <div class="admin-field"><label for="f-plot_area">Plot Area</label><input type="text" id="f-plot_area"></div>
+          <div class="admin-field"><label for="f-area_unit">Area Unit</label><select id="f-area_unit"><option>Sq.ft</option><option>Sq.m</option><option>Ground</option><option>Cent</option><option>Acre</option></select>
           </div>
         </div>
         <div class="admin-form-row-3">
-          <div class="admin-field"><label>Bedrooms</label><input type="number" id="f-bedrooms"></div>
-          <div class="admin-field"><label>Bathrooms</label><input type="number" id="f-bathrooms"></div>
-          <div class="admin-field"><label>Balconies</label><input type="number" id="f-balconies"></div>
+          <div class="admin-field"><label for="f-bedrooms">Bedrooms</label><input type="number" id="f-bedrooms"></div>
+          <div class="admin-field"><label for="f-bathrooms">Bathrooms</label><input type="number" id="f-bathrooms"></div>
+          <div class="admin-field"><label for="f-balconies">Balconies</label><input type="number" id="f-balconies"></div>
         </div>
         <div class="admin-form-row-3">
-          <div class="admin-field"><label>Car Parking</label><input type="text" id="f-car_parking" placeholder="e.g. 2 Covered"></div>
-          <div class="admin-field"><label>Property Age</label><input type="text" id="f-property_age"></div>
-          <div class="admin-field"><label>Facing</label><input type="text" id="f-facing"></div>
+          <div class="admin-field"><label for="f-car_parking">Car Parking</label><input type="text" id="f-car_parking" placeholder="e.g. 2 Covered"></div>
+          <div class="admin-field"><label for="f-property_age">Property Age</label><input type="text" id="f-property_age"></div>
+          <div class="admin-field"><label for="f-facing">Facing</label><input type="text" id="f-facing"></div>
         </div>
         <div class="admin-form-row-3">
-          <div class="admin-field"><label>Floor Number</label><input type="text" id="f-floor_number"></div>
-          <div class="admin-field"><label>Total Floors</label><input type="text" id="f-total_floors"></div>
-          <div class="admin-field"><label>Furnishing</label>
-            <select id="f-furnishing"><option value="">Select</option><option>Unfurnished</option><option>Semi-Furnished</option><option>Fully Furnished</option></select>
+          <div class="admin-field"><label for="f-floor_number">Floor Number</label><input type="text" id="f-floor_number"></div>
+          <div class="admin-field"><label for="f-total_floors">Total Floors</label><input type="text" id="f-total_floors"></div>
+          <div class="admin-field"><label for="f-furnishing">Furnishing</label><select id="f-furnishing"><option value="">Select</option><option>Unfurnished</option><option>Semi-Furnished</option><option>Fully Furnished</option></select>
           </div>
         </div>
         <div class="admin-form-row-3">
-          <div class="admin-field"><label>Possession Status</label><input type="text" id="f-possession_status"></div>
-          <div class="admin-field"><label>Road Width</label><input type="text" id="f-road_width"></div>
-          <div class="admin-field"><label>Frontage</label><input type="text" id="f-frontage"></div>
+          <div class="admin-field"><label for="f-possession_status">Possession Status</label><input type="text" id="f-possession_status"></div>
+          <div class="admin-field"><label for="f-road_width">Road Width</label><input type="text" id="f-road_width"></div>
+          <div class="admin-field"><label for="f-frontage">Frontage</label><input type="text" id="f-frontage"></div>
         </div>
         <div class="admin-form-row">
-          <div class="admin-field"><label>Depth</label><input type="text" id="f-depth"></div>
-          <div class="admin-field"><label>Approval / Authority</label><input type="text" id="f-approval_authority" placeholder="e.g. DTCP, CMDA"></div>
+          <div class="admin-field"><label for="f-depth">Depth</label><input type="text" id="f-depth"></div>
+          <div class="admin-field"><label for="f-approval_authority">Approval / Authority</label><input type="text" id="f-approval_authority" placeholder="e.g. DTCP, CMDA"></div>
         </div>
-        <div class="admin-field"><label>RERA Information</label><input type="text" id="f-rera_info"></div>
+        <div class="admin-field"><label for="f-rera_info">RERA Information</label><input type="text" id="f-rera_info"></div>
       </div>
 
       <!-- DESCRIPTION -->
       <div class="pe-panel" data-panel="description">
-        <div class="admin-field"><label>Short Description</label><textarea id="f-short_description" placeholder="One or two lines shown on property cards"></textarea></div>
-        <div class="admin-field"><label>Full Description</label><textarea id="f-full_description" style="min-height:160px;" placeholder="Paragraphs, headings (##), bullet points (- item) are all fine here."></textarea></div>
-        <div class="admin-field"><label>Highlights (one per line)</label><textarea id="f-highlights" placeholder="Corner plot&#10;Gated community&#10;Ready to move in"></textarea></div>
-        <div class="admin-field"><label>Nearby Landmarks</label><textarea id="f-nearby_landmarks"></textarea></div>
+        <div class="admin-field"><label for="f-short_description">Short Description</label><textarea id="f-short_description" placeholder="One or two lines shown on property cards"></textarea></div>
+        <div class="admin-field"><label for="f-full_description">Full Description</label><textarea id="f-full_description" style="min-height:160px;" placeholder="Paragraphs, headings (##), bullet points (- item) are all fine here."></textarea></div>
+        <div class="admin-field"><label for="f-highlights">Highlights (one per line)</label><textarea id="f-highlights" placeholder="Corner plot&#10;Gated community&#10;Ready to move in"></textarea></div>
+        <div class="admin-field"><label for="f-nearby_landmarks">Nearby Landmarks</label><textarea id="f-nearby_landmarks"></textarea></div>
         <div class="pe-section-title">Amenities</div>
         <div class="admin-checkbox-grid" id="amenitiesGrid"></div>
       </div>
@@ -149,41 +155,65 @@
         <label class="admin-dropzone" id="imageDropzone">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <div style="font-weight:700;font-size:13.5px;">Drag &amp; drop images here, or click to choose</div>
-          <div style="font-size:12px;color:var(--slate);margin-top:4px;">Any number of images. JPG, PNG or WebP, up to 8MB each.</div>
-          <input type="file" id="imageFileInput" accept="image/jpeg,image/png,image/webp" multiple>
+          <div style="font-size:12px;color:var(--slate);margin-top:4px;">Any number of images. JPG, PNG, WebP or AVIF, up to 8MB each.</div>
+          <input type="file" id="imageFileInput" accept="image/jpeg,image/png,image/webp,image/avif" multiple aria-label="Choose property images">
         </label>
         <div class="admin-upload-progress" id="uploadProgressWrap" style="display:none;">
           <div style="font-size:12.5px;color:var(--slate);" id="uploadProgressLabel"></div>
           <div class="admin-upload-progress-bar"><div class="admin-upload-progress-fill" id="uploadProgressFill"></div></div>
         </div>
-        <p class="admin-field-hint" style="margin-top:10px;">Click the star on an image to make it the Featured Image. Drag images to reorder them. Save the property first if you haven't yet — images attach to a saved property.</p>
+        <p class="admin-field-hint" style="margin-top:10px;">The star makes an image the Featured Image (one per property). Use the arrows or drag to reorder. Deleting the featured image makes the next one featured automatically.</p>
         <div class="admin-image-grid" id="imageGrid"></div>
       </div>
 
       <!-- VIDEO -->
       <div class="pe-panel" data-panel="video">
-        <div class="admin-field"><label>YouTube URL</label><input type="url" id="f-video_youtube_url"></div>
-        <div class="admin-field"><label>Instagram Reel URL</label><input type="url" id="f-video_instagram_url"></div>
-        <div class="admin-field"><label>Property Video URL (other)</label><input type="url" id="f-video_other_url"></div>
+        <div class="admin-field"><label for="f-video_youtube_url">YouTube URL</label><input type="url" id="f-video_youtube_url"></div>
+        <div class="admin-field"><label for="f-video_instagram_url">Instagram Reel URL</label><input type="url" id="f-video_instagram_url"></div>
+        <div class="admin-field"><label for="f-video_other_url">Property Video URL (other)</label><input type="url" id="f-video_other_url"></div>
         <p class="admin-field-hint">Leave all blank if there's no video — the public property page won't show an empty video section.</p>
       </div>
 
       <!-- SEO -->
       <div class="pe-panel" data-panel="seo">
-        <div class="admin-field"><label>URL Slug</label><input type="text" id="f-slug" placeholder="auto-generated from title if left blank"></div>
-        <div class="admin-field"><label>SEO Page Title</label><input type="text" id="f-seo_title"></div>
-        <div class="admin-field"><label>Meta Description</label><textarea id="f-seo_description"></textarea></div>
-        <div class="admin-field"><label>SEO Keywords</label><input type="text" id="f-seo_keywords" placeholder="comma, separated, keywords"></div>
-        <div class="admin-field"><label>Canonical URL</label><input type="url" id="f-canonical_url"></div>
-        <div class="admin-field"><label>Open Graph Image URL</label><input type="url" id="f-og_image_url" placeholder="Defaults to the featured image if left blank"></div>
+        <div class="admin-field"><label for="f-slug">URL Slug</label><input type="text" id="f-slug" maxlength="80" placeholder="leave blank to generate from title + location">
+          <p class="admin-field-hint">Keep it stable once published — changing it later automatically redirects the old link.</p></div>
+        <div class="admin-field"><label for="f-seo_title">SEO Page Title</label><input type="text" id="f-seo_title" maxlength="120" placeholder="Blank = automatic, e.g. “2 BHK Flat for Sale in Nandanam, Chennai | DGSS Realty”"></div>
+        <div class="admin-field"><label for="f-seo_description">Meta Description</label><textarea id="f-seo_description" maxlength="300" placeholder="Blank = automatic, built from the property's real details"></textarea></div>
+        <div class="admin-field"><label for="f-canonical_url">Canonical URL</label><input type="url" id="f-canonical_url" placeholder="Leave blank (recommended)">
+          <p class="admin-field-hint">Only for special cases (e.g. a duplicate listing pointing to the original). Must be an address on this website. Blank uses this property's own page.</p></div>
+        <div class="admin-field"><label for="f-og_image_url">Share Image URL (Open Graph)</label><input type="url" id="f-og_image_url" placeholder="Blank = the featured image">
+          <p class="admin-field-hint">Blank uses the featured photo, then the site-wide default share image (Admin → SEO).</p></div>
+      </div>
+
+      <!-- INTERNAL (staff only — stored in property_internal, never public) -->
+      <div class="pe-panel" data-panel="internal">
+        <p class="admin-callout">🔒 Staff only. These details are stored separately from the listing and can never appear on the website, in search results, the sitemap or structured data.</p>
+        <div class="admin-form-row">
+          <div class="admin-field"><label for="i-owner_name">Owner / Seller Name</label><input type="text" id="i-owner_name" maxlength="120" autocomplete="off"></div>
+          <div class="admin-field"><label for="i-owner_phone">Owner Phone</label><input type="tel" id="i-owner_phone" maxlength="25" autocomplete="off"></div>
+        </div>
+        <div class="admin-form-row-3">
+          <div class="admin-field"><label for="i-mandate">Mandate</label><select id="i-mandate"><option value="">Not set</option><option value="exclusive">Exclusive</option><option value="non_exclusive">Non-exclusive</option></select></div>
+          <div class="admin-field"><label for="i-listing_date">Listing Date</label><input type="date" id="i-listing_date"></div>
+          <div class="admin-field"><label for="i-expiry_date">Mandate Expiry</label><input type="date" id="i-expiry_date"></div>
+        </div>
+        <div class="admin-field"><label for="i-acquisition_source">Acquisition Source</label><input type="text" id="i-acquisition_source" maxlength="120" placeholder="e.g. Referral, walk-in, website List With Us form"></div>
+        <div class="admin-field"><label for="i-internal_notes">Internal Notes</label><textarea id="i-internal_notes" maxlength="4000"></textarea></div>
       </div>
 
       <div class="pe-actions-bar">
         <span id="propertyFormStatus" style="margin-right:auto;align-self:center;font-size:12.5px;color:var(--slate);"></span>
-        <a href="properties.html" class="admin-btn admin-btn-outline">Cancel</a>
-        <button type="button" class="admin-btn admin-btn-outline" id="saveDraftBtn">Save Draft</button>
-        <button type="button" class="admin-btn admin-btn-outline" id="previewBtn">Preview</button>
-        <button type="button" class="admin-btn admin-btn-primary" id="publishBtn">Publish</button>
+        <a href="properties.html" class="admin-btn admin-btn-outline">Back</a>
+        <button type="button" class="admin-btn admin-btn-outline" id="duplicateBtn" style="display:none;">Duplicate</button>
+        <button type="button" class="admin-btn admin-btn-outline" id="archiveBtn" style="display:none;">Archive</button>
+        <button type="button" class="admin-btn admin-btn-outline" id="previewBtn" style="display:none;">Preview</button>
+        <button type="button" class="admin-btn admin-btn-outline" id="unpublishBtn" style="display:none;">Unpublish</button>
+        <button type="button" class="admin-btn admin-btn-outline" id="returnDraftBtn" style="display:none;">Send back to draft</button>
+        <button type="button" class="admin-btn admin-btn-outline" id="saveBtn">Save Draft</button>
+        <button type="button" class="admin-btn admin-btn-outline" id="submitReviewBtn" style="display:none;">Submit for Review</button>
+        <button type="button" class="admin-btn admin-btn-outline" id="approveBtn" style="display:none;">Approve</button>
+        <button type="button" class="admin-btn admin-btn-primary" id="publishBtn" style="display:none;">Publish</button>
       </div>
     </form>
   </div>
@@ -193,6 +223,7 @@
 <script src="../js/supabase-client.js" defer></script>
 <script src="js/admin-auth.js" defer></script>
 <script src="js/admin-shell.js" defer></script>
+<script src="js/admin-rules.js" defer></script>
 <script src="js/admin-property-edit.js" defer></script>
 </body>
 </html>

@@ -4,24 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Settings — DGSS Realty Admin</title>
+<title>Branding — DGSS Realty Admin</title>
 <link rel="stylesheet" href="css/admin.css">
-<script>window.ADMIN_PAGE_TITLE = "Settings"; window.ADMIN_ACTIVE_NAV = "settings";</script>
+<meta name="dgss-admin-page" content="Branding" data-nav="settings">
 </head>
-<body>
+<body data-settings-fields="company_name,logo_url">
 <div id="adminShellSlot"></div>
 
 <template id="settingsFormTemplate">
-  <div class="admin-card" style="padding:22px;max-width:640px;">
+  <div class="admin-card admin-form-card">
+    <p class="admin-card-intro">Your business name and logo appear in the header and footer of every page, in search results (structured data) and on shared links.</p>
     <form id="settingsForm" novalidate>
-      <div class="admin-field"><label>Company Name</label><input type="text" id="s-company_name"></div>
-      <div class="admin-field"><label>Logo URL</label><input type="url" id="s-logo_url">
-        <p class="admin-field-hint">Upload your logo file to the Media Library first, then paste its URL here.</p>
+      <div class="admin-field">
+        <label for="s-company_name">Company Name <span class="req">*</span></label>
+        <input type="text" id="s-company_name" aria-describedby="s-company_name-hint" maxlength="120" data-required autocomplete="organization">
+        <p class="admin-field-hint" id="s-company_name-hint">Used in page titles (“… | DGSS Realty”), the logo’s text alternative, structured data and WhatsApp messages.</p>
       </div>
-      <div class="pe-section-title" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin:20px 0 12px;">Default SEO</div>
-      <div class="admin-field"><label>Default SEO Title</label><input type="text" id="s-default_seo_title"></div>
-      <div class="admin-field"><label>Default Meta Description</label><textarea id="s-default_seo_description"></textarea></div>
-      <button type="submit" class="admin-btn admin-btn-primary" style="margin-top:6px;">Save Changes</button>
+      <div class="admin-field">
+        <label for="s-logo_url">Logo</label>
+        <input type="text" id="s-logo_url" aria-describedby="s-logo_url-hint" inputmode="url" data-validate="url" data-media-picker="branding" placeholder="Blank = the standard DGSS Realty logo">
+        <p class="admin-field-hint" id="s-logo_url-hint">Upload the logo in Media Library → Branding, then choose it here. PNG/WebP with a transparent background works best (shown about 44px tall).</p>
+      </div>
+      <button type="submit" class="admin-btn admin-btn-primary">Save Changes</button>
     </form>
   </div>
 </template>
@@ -31,10 +35,6 @@
 <script src="js/admin-auth.js" defer></script>
 <script src="js/admin-shell.js" defer></script>
 <script src="js/admin-settings-form.js" defer></script>
-<script defer>
-  document.addEventListener("DOMContentLoaded", () =>
-    initSettingsForm(["company_name", "logo_url", "default_seo_title", "default_seo_description"])
-  );
-</script>
+
 </body>
 </html>

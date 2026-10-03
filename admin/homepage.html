@@ -6,59 +6,77 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Homepage — DGSS Realty Admin</title>
 <link rel="stylesheet" href="css/admin.css">
-<script>window.ADMIN_PAGE_TITLE = "Homepage"; window.ADMIN_ACTIVE_NAV = "homepage";</script>
+<meta name="dgss-admin-page" content="Homepage" data-nav="homepage">
 </head>
-<body>
+<body data-settings-fields="hero_heading,hero_subheading,hero_cta_text,founder_name,founder_designation,founder_location,founder_experience,founder_credential_line,founder_photo_url,founder_bio_intro,founder_bio_top,founder_bio_bottom,founder_quote">
 <div id="adminShellSlot"></div>
 
 <template id="settingsFormTemplate">
-  <div class="admin-card" style="padding:22px;max-width:640px;margin-bottom:18px;">
-    <h2 style="font-size:15px;margin-bottom:6px;">Founder Section</h2>
-    <p style="font-size:12.5px;color:var(--slate);margin-bottom:18px;">These control the founder's details wherever they appear on the public site — the About section and the "Meet Our Founder" section. Leave any field blank to keep the site's existing text for that item.</p>
+  <div class="admin-card admin-form-card">
+    <p class="admin-card-intro">These control the homepage text. Any field left blank keeps the website's standard wording for that item. Changes are live within a few seconds.</p>
     <form id="settingsForm" novalidate>
-      <div class="admin-field"><label>Founder Name</label><input type="text" id="s-founder_name" placeholder="e.g. D. Gopi"></div>
+      <h2 class="admin-section-title">Hero Section</h2>
       <div class="admin-field">
-        <label>Designation</label>
-        <input type="text" id="s-founder_designation" placeholder="e.g. Founder, Realty Advisor, Founder &amp; Realty Advisor">
-        <p class="admin-field-hint">Shown on its own and also combined with the company name (e.g. "Realty Advisor – DGSS Realty"). Change it any time — every place it appears updates together.</p>
-      </div>
-      <div class="admin-field"><label>Location</label><input type="text" id="s-founder_location" placeholder="e.g. K.K. Nagar, Chennai"></div>
-      <div class="admin-field"><label>Experience Badge</label><input type="text" id="s-founder_experience" placeholder="e.g. 20+ Years Experience"></div>
-      <div class="admin-field"><label>Credential Line (About section)</label><input type="text" id="s-founder_credential_line" placeholder="e.g. 20+ Years in Sales, Rentals, Leasing…"></div>
-      <div class="admin-field"><label>Founder Photo URL</label><input type="url" id="s-founder_photo_url" placeholder="Leave blank to keep the current photo"></div>
-
-      <div class="pe-section-title" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin:22px 0 12px;">Biography</div>
-      <div class="admin-field"><label>Intro Line</label><textarea id="s-founder_bio_intro" placeholder="The bold opening line of the founder bio"></textarea></div>
-      <div class="admin-field">
-        <label>Bio — first part</label>
-        <textarea id="s-founder_bio_top" style="min-height:140px;"></textarea>
-        <p class="admin-field-hint">Separate paragraphs with a blank line.</p>
+        <label for="s-hero_heading">Hero Heading</label>
+        <textarea id="s-hero_heading" aria-describedby="s-hero_heading-hint" maxlength="160" rows="2"></textarea>
+        <p class="admin-field-hint" id="s-hero_heading-hint">Put a second line on a new line to show it in the accent colour (e.g. “Find your next property.” ↵ “With trusted guidance.”).</p>
       </div>
       <div class="admin-field">
-        <label>Bio — second part</label>
-        <textarea id="s-founder_bio_bottom" style="min-height:140px;"></textarea>
-        <p class="admin-field-hint">Appears after the highlights row. Separate paragraphs with a blank line.</p>
+        <label for="s-hero_subheading">Hero Subheading</label>
+        <textarea id="s-hero_subheading" maxlength="400"></textarea>
       </div>
-      <div class="admin-field"><label>Founder Quote</label><textarea id="s-founder_quote"></textarea></div>
-
-      <div class="pe-section-title" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin:22px 0 12px;">Hero Section</div>
-      <div class="admin-field"><label>Hero Heading</label><input type="text" id="s-hero_heading"></div>
-      <div class="admin-field"><label>Hero Subheading</label><textarea id="s-hero_subheading"></textarea></div>
-      <div class="admin-field"><label>CTA Button Text</label><input type="text" id="s-hero_cta_text"></div>
-
-      <button type="submit" class="admin-btn admin-btn-primary" style="margin-top:6px;">Save Changes</button>
+      <div class="admin-field">
+        <label for="s-hero_cta_text">Main Button Text</label>
+        <input type="text" id="s-hero_cta_text" aria-describedby="s-hero_cta_text-hint" maxlength="40">
+        <p class="admin-field-hint" id="s-hero_cta_text-hint">The button that scrolls to the listings, e.g. “Explore Properties”.</p>
+      </div>
+      <h2 class="admin-section-title">Founder Section</h2>
+      <div class="admin-field">
+        <label for="s-founder_name">Founder Name</label>
+        <input type="text" id="s-founder_name" maxlength="80" placeholder="e.g. D. Gopi">
+      </div>
+      <div class="admin-field">
+        <label for="s-founder_designation">Designation</label>
+        <input type="text" id="s-founder_designation" aria-describedby="s-founder_designation-hint" maxlength="120">
+        <p class="admin-field-hint" id="s-founder_designation-hint">Shown on its own and with the company name (e.g. “Real Estate Advisor – DGSS Realty”).</p>
+      </div>
+      <div class="admin-field">
+        <label for="s-founder_location">Location</label>
+        <input type="text" id="s-founder_location" maxlength="120" placeholder="e.g. K.K. Nagar, Chennai">
+      </div>
+      <div class="admin-field">
+        <label for="s-founder_experience">Experience Badge</label>
+        <input type="text" id="s-founder_experience" maxlength="80" placeholder="e.g. 20+ Years Experience">
+      </div>
+      <div class="admin-field">
+        <label for="s-founder_credential_line">Credential Line (About section)</label>
+        <input type="text" id="s-founder_credential_line" maxlength="200">
+      </div>
+      <div class="admin-field">
+        <label for="s-founder_photo_url">Founder Photo</label>
+        <input type="text" id="s-founder_photo_url" aria-describedby="s-founder_photo_url-hint" inputmode="url" data-validate="url" data-media-picker="founder">
+        <p class="admin-field-hint" id="s-founder_photo_url-hint">Square photo, at least 600×600. Upload it in Media Library → Founder. Blank keeps the current photo.</p>
+      </div>
+      <div class="admin-field">
+        <label for="s-founder_bio_intro">Bio — intro line</label>
+        <textarea id="s-founder_bio_intro" maxlength="400"></textarea>
+      </div>
+      <div class="admin-field">
+        <label for="s-founder_bio_top">Bio — first part</label>
+        <textarea id="s-founder_bio_top" aria-describedby="s-founder_bio_top-hint" maxlength="3000" style="min-height:140px;"></textarea>
+        <p class="admin-field-hint" id="s-founder_bio_top-hint">Separate paragraphs with a blank line.</p>
+      </div>
+      <div class="admin-field">
+        <label for="s-founder_bio_bottom">Bio — second part</label>
+        <textarea id="s-founder_bio_bottom" aria-describedby="s-founder_bio_bottom-hint" maxlength="3000" style="min-height:140px;"></textarea>
+        <p class="admin-field-hint" id="s-founder_bio_bottom-hint">Appears after the highlights row. Separate paragraphs with a blank line.</p>
+      </div>
+      <div class="admin-field">
+        <label for="s-founder_quote">Founder Quote</label>
+        <textarea id="s-founder_quote" maxlength="400"></textarea>
+      </div>
+      <button type="submit" class="admin-btn admin-btn-primary">Save Changes</button>
     </form>
-  </div>
-
-  <div class="admin-card" style="padding:18px 22px;max-width:640px;background:#FFF3DC;border-color:#F5D28A;">
-    <strong style="font-size:13px;">What's live right now</strong>
-    <p style="font-size:12.5px;color:var(--slate);margin-top:4px;">
-      The <strong>Founder</strong> fields above are fully connected — saving here updates the public site straight away.
-      Featured properties and testimonials also work today via
-      <a href="properties.html" style="color:var(--orange-600);font-weight:600;">Properties</a> and
-      <a href="testimonials.html" style="color:var(--orange-600);font-weight:600;">Testimonials</a>.
-      The hero heading/subheading/CTA fields save correctly, but the public hero still shows its original fixed text — connecting that is a small follow-up change to the hero markup.
-    </p>
   </div>
 </template>
 
@@ -67,15 +85,6 @@
 <script src="js/admin-auth.js" defer></script>
 <script src="js/admin-shell.js" defer></script>
 <script src="js/admin-settings-form.js" defer></script>
-<script defer>
-  document.addEventListener("DOMContentLoaded", () =>
-    initSettingsForm([
-      "founder_name", "founder_designation", "founder_location", "founder_experience",
-      "founder_credential_line", "founder_photo_url",
-      "founder_bio_intro", "founder_bio_top", "founder_bio_bottom", "founder_quote",
-      "hero_heading", "hero_subheading", "hero_cta_text"
-    ])
-  );
-</script>
+
 </body>
 </html>

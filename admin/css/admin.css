@@ -260,3 +260,151 @@ img{max-width:100%;display:block;}
   .admin-stat-grid{grid-template-columns:1fr;}
   .admin-checkbox-grid{grid-template-columns:1fr 1fr;}
 }
+
+/* Visually hidden but available to screen readers (form labels etc.) */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+/* Visible keyboard focus across the admin */
+.admin-btn:focus-visible,.admin-field input:focus-visible,.admin-field select:focus-visible,.admin-field textarea:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--orange-600,#B00000);outline-offset:2px;}
+.admin-char-count{font-size:11.5px;color:var(--slate);margin-top:4px;display:block;}
+.admin-char-count.over{color:#b42318;font-weight:700;}
+.admin-field.invalid input,.admin-field.invalid select,.admin-field.invalid textarea{border-color:#b42318 !important;}
+.admin-field-error{display:none;font-size:12px;color:#b42318;margin-top:4px;}
+.admin-field.invalid .admin-field-error{display:block;}
+.admin-image-alt{width:100%;margin-top:6px;padding:6px 8px;font-size:12px;border:1.5px solid var(--line);border-radius:8px;}
+.admin-image-move{display:flex;gap:4px;justify-content:center;margin-top:4px;}
+.admin-image-move button{padding:2px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:12px;}
+.admin-slug-preview{font-size:12px;color:var(--slate);margin-top:4px;word-break:break-all;}
+.admin-stat-card.accent .admin-stat-value{color:var(--orange-600,#B00000);}
+/* Keeps visually-hidden labels inside table cards from widening the page on phones */
+.admin-card{position:relative;}
+
+/* ==========================================================================
+   2026-10 additions: CRM, staff, media library, audit, workflow, a11y,
+   mobile. Same tokens as above — no visual redesign.
+   ========================================================================== */
+[hidden]{display:none !important;}
+.admin-subtext{font-size:12px;color:var(--slate);}
+.admin-strong{font-weight:700;color:var(--navy-900);}
+.admin-nowrap{white-space:nowrap;}
+.admin-ellipsis{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+.admin-link{color:var(--orange-700);font-weight:600;text-decoration:underline;text-underline-offset:2px;}
+.admin-link-btn{color:var(--orange-700);font-weight:600;text-decoration:underline;text-underline-offset:2px;padding:0;font-size:inherit;text-align:left;}
+.admin-loading{text-align:center;padding:40px !important;color:var(--slate);}
+.admin-pad{padding:20px;}
+.admin-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+.admin-card-title{font-size:15px;color:var(--navy-900);margin-bottom:6px;}
+.admin-card-intro{font-size:12.5px;color:var(--slate);margin-bottom:16px;max-width:760px;}
+.admin-form-card{padding:22px;max-width:760px;margin-bottom:18px;}
+.admin-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin:22px 0 12px;}
+.admin-steps{padding-left:20px;font-size:13px;color:var(--ink);display:grid;gap:6px;list-style:decimal;}
+.admin-actions-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.admin-inline-status{font-size:12.5px;color:var(--slate);}
+.admin-callout{background:#FFF3DC;border:1px solid #F5D28A;border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--ink);margin-bottom:16px;}
+.admin-label{display:block;font-size:12.5px;font-weight:700;color:var(--navy-900);margin-bottom:7px;}
+.admin-pre{font-size:13.5px;white-space:pre-wrap;}
+.admin-login-notice{display:none;background:#E4F7EC;color:var(--green);font-size:13px;font-weight:600;padding:11px 14px;border-radius:10px;margin-bottom:18px;}
+.admin-login-notice.show{display:block;}
+.admin-login-links{text-align:center;margin-top:14px;font-size:13px;}
+.admin-login-links a{color:var(--orange-700);font-weight:600;}
+.admin-login-help{font-size:13px;color:var(--slate);margin-bottom:14px;}
+h1.admin-login-sub{font-size:15px;font-weight:600;}
+
+/* filters / toolbars */
+.admin-filter-card{padding:16px 18px;margin-bottom:14px;}
+.admin-filter-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.admin-filter-input{flex:1 1 220px;min-width:0;padding:10px 14px;border:1.5px solid var(--line);border-radius:11px;background:#fff;}
+.admin-filter-select{padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;background:#fff;max-width:100%;}
+.admin-select-sm{padding:6px 10px;}
+.admin-list-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:4px 0 10px;}
+.admin-list-toolbar-actions{display:flex;gap:8px;align-items:center;}
+.admin-pagination{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;margin-top:14px;}
+.admin-table-card{overflow-x:auto;margin-bottom:14px;}
+.admin-row-actions{white-space:nowrap;}
+.admin-row-actions .admin-btn{margin:2px 0;}
+
+/* dashboard */
+a.admin-stat-card{display:block;transition:border-color var(--transition-fast), transform var(--transition-fast);}
+a.admin-stat-card:hover{border-color:var(--orange-600);transform:translateY(-1px);}
+.admin-stat-label,.admin-stat-value{display:block;}
+.admin-stat-grid{grid-template-columns:repeat(5,1fr);}
+.admin-two-col-even{grid-template-columns:1fr 1fr;}
+.admin-list-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
+.admin-list-row > div{min-width:0;flex:1;}
+.admin-bar-list{display:grid;gap:10px;}
+.admin-bar-list li{position:relative;}
+.admin-bar-list a{display:flex;justify-content:space-between;font-size:13px;padding:2px 0 6px;}
+.admin-bar{display:block;height:6px;border-radius:100px;background:var(--orange-600);min-width:4px;}
+
+/* timeline */
+.admin-timeline{display:grid;gap:0;}
+.admin-timeline-item{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;}
+.admin-timeline-when{grid-row:span 2;font-size:11.5px;color:var(--slate);white-space:nowrap;min-width:120px;}
+.admin-timeline-who{font-size:11.5px;color:var(--slate);}
+.admin-timeline-note{white-space:pre-wrap;background:var(--mist);border-radius:8px;padding:6px 9px;display:inline-block;}
+
+/* leads detail */
+.admin-modal-wide{max-width:980px;max-height:calc(100vh - 40px);overflow-y:auto;}
+.admin-modal{max-height:calc(100vh - 40px);overflow-y:auto;}
+.admin-lead-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-bottom:16px;}
+.admin-quick-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;}
+.admin-lead-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;}
+.admin-lead-facts{display:grid;gap:4px;font-size:13px;margin-bottom:14px;}
+
+/* settings / media */
+.admin-media-field{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;}
+.admin-media-preview{width:120px;height:60px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:repeating-conic-gradient(#f2f2f2 0 25%,#fff 0 50%) 0 0/12px 12px;}
+.admin-pick-item{padding:0;cursor:pointer;display:block;}
+.admin-pick-label{position:absolute;left:0;right:0;bottom:0;background:rgba(11,35,64,.7);color:#fff;font-size:11px;padding:3px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.admin-media-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));}
+.admin-media-card{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.admin-media-card .admin-image-item{cursor:default;}
+.admin-media-actions{display:flex;flex-wrap:wrap;gap:4px;}
+.admin-path-list{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;display:grid;gap:3px;margin:8px 0 12px;word-break:break-all;}
+.admin-price-check{font-size:12.5px;color:var(--slate);background:var(--mist);border-radius:10px;padding:10px 12px;margin:-4px 0 14px;}
+.admin-price-check.is-warning{background:#FFF3DC;color:#7a4b00;border:1px solid #F5D28A;}
+.admin-diff{font-size:12px;margin-bottom:3px;}
+.admin-diff-key{font-weight:700;margin-right:4px;}
+.admin-diff-old{color:var(--red);text-decoration:line-through;word-break:break-word;}
+.admin-diff-new{color:var(--green);word-break:break-word;}
+
+/* mobile sidebar overlay (was an inline style) */
+.admin-mobile-overlay{display:none;position:fixed;inset:0;background:rgba(11,35,64,.5);z-index:890;}
+.admin-mobile-overlay.open{display:block;}
+
+/* Touch screens have no hover: keep image actions visible and tappable. */
+@media (hover:none){
+  .admin-image-actions{opacity:1;background:linear-gradient(to top,rgba(11,35,64,.55),transparent 60%);align-items:flex-end;padding-bottom:6px;}
+  .admin-image-actions button{width:36px;height:36px;}
+}
+
+@media (max-width:1100px){
+  .admin-stat-grid{grid-template-columns:repeat(3,1fr);}
+  .admin-lead-grid,.admin-two-col-even{grid-template-columns:1fr;}
+}
+@media (max-width:900px){
+  /* Comfortable touch targets */
+  .admin-btn{min-height:40px;}
+  .admin-btn-sm{min-height:36px;}
+  .admin-filter-select,.admin-filter-input{min-height:42px;}
+  .pe-actions-bar{position:static !important;}
+  /* Tables become stacked cards instead of overflowing sideways. */
+  .admin-table.admin-table-responsive{display:block;white-space:normal;}
+  .admin-table-responsive thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+  .admin-table-responsive tbody,.admin-table-responsive tr,.admin-table-responsive td{display:block;width:100%;}
+  .admin-table-responsive tr{border-bottom:1px solid var(--line);padding:10px 4px;}
+  .admin-table-responsive td{border:0 !important;padding:5px 12px !important;}
+  .admin-table-responsive td[data-label]:not([data-label=""])::before{content:attr(data-label);display:block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--slate);margin-bottom:2px;}
+  .admin-table-responsive td[colspan]{padding:0 !important;}
+  .admin-row-actions{white-space:normal;}
+  .admin-timeline-item{grid-template-columns:1fr;}
+  .admin-timeline-when{grid-row:auto;}
+}
+@media (max-width:640px){
+  .admin-stat-grid{grid-template-columns:1fr 1fr;}
+  .admin-modal-overlay{padding:8px;align-items:flex-start;}
+  .admin-modal{padding:18px;}
+  .admin-list-toolbar{flex-direction:column;align-items:stretch;}
+  .admin-pagination{justify-content:center;}
+  .admin-media-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .admin-topbar h1{font-size:16px;}
+}
