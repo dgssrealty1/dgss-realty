@@ -189,11 +189,20 @@ export function cmsValue(kind, key, s) {
   return null;
 }
 
+/* A heading made of several short sentences ("Discover the Right Property.
+   Make the Right Deal.") gets one span per sentence, so each sentence starts
+   on its own line and never breaks awkwardly mid-phrase on phones. A single
+   sentence is returned exactly as before. */
+export function heroSentencesHtml(text) {
+  const parts = String(text || "").split(/(?<=[.!?])\s+(?=\S)/).map(p => p.trim()).filter(Boolean);
+  if (parts.length < 2) return esc(String(text || "").trim());
+  return parts.map(p => `<span class="hero-h1-part">${esc(p)}</span>`).join(" ");
+}
 export function heroHeadingHtml(text) {
   const lines = String(text || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  if (lines.length < 2) return esc(lines[0] || "");
+  if (lines.length < 2) return heroSentencesHtml(lines[0] || "");
   const last = lines.pop();
-  return `${esc(lines.join(" "))}<br><span class="accent">${esc(last)}</span>`;
+  return `${heroSentencesHtml(lines.join(" "))}<br><span class="accent">${esc(last)}</span>`;
 }
 export function parasHtml(text) {
   return String(text || "").split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)

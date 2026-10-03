@@ -117,6 +117,19 @@ async function handle(request, env, ctx) {
   if (path === "/sitemap.xml") return handleSitemap(request, env, c);
   if (path.startsWith("/media/")) return handleMedia(request, env, c, path);
 
+  // Internal pages: /about.html, /properties.html, … are the canonical
+  // URLs; /about, /about/, /properties and /properties/ redirect there.
+  const pageMatch = path.match(/^\/([a-z-]+)(\.html|\/)?$/i);
+  if (pageMatch && SITE_PAGES[pageMatch[1].toLowerCase()]) {
+    const slug = pageMatch[1].toLowerCase();
+    if (pageMatch[2] !== ".html" || pageMatch[1] !== slug) {
+      return Response.redirect(`${c.origin}/${slug}.html${url.search}`, 301);
+    }
+    if (env.ASSETS && (request.method === "GET" || request.method === "HEAD")) {
+      return handleSitePage(request, env, c, slug);
+    }
+  }
+
   // Legacy "/?property=<slug>" share links from the old modal system.
   if ((path === "/" || path === "/index.html") && url.searchParams.get("property")) {
     const slug = normalizeSlug(url.searchParams.get("property"));
@@ -130,7 +143,7 @@ async function handle(request, env, ctx) {
   const propMatch = path.match(/^\/properties(?:\/([^/]*))?(\/?)$/i);
   if (propMatch) {
     const rawSlug = propMatch[1] ? safeDecode(propMatch[1]) : "";
-    if (!rawSlug) return Response.redirect(`${c.origin}/#properties`, 301);
+    if (!rawSlug) return Response.redirect(`${c.origin}/properties.html`, 301);
     const slug = normalizeSlug(rawSlug);
     if (!slug) return notFound(c, env, request, "property");
     if (slug !== rawSlug || !propMatch[2]) {
@@ -295,7 +308,7 @@ async function handlePropertyPage(request, env, c, slug) {
     property = await getPublishedProperty(c, slug);
   } catch (err) {
     console.error("Property fetch failed:", err.message);
-    return htmlResponse(renderErrorPage(c), 503, env, request);
+    return htmlResponse(renderErrorPage(c, null, await loadChrome(env, request)), 503, env, request);
   }
 
   if (!property) {
@@ -321,7 +334,8 @@ async function handlePropertyPage(request, env, c, slug) {
   const area = detectArea(property);
   // Only link to an area page that is itself indexable (2+ listings).
   const areaLink = area && all.filter(p => areaMatches(area, p)).length >= 2 ? area : null;
-  const html = renderPropertyPage({ c, property, contact, related, preview: false, areaLink });
+  const chrome = await loadChrome(env, request);
+  const html = renderPropertyPage({ c, property, contact, related, preview: false, areaLink, chrome });
   return htmlResponse(html, 200, env, request, { cache: PAGE_CACHE });
 }
 
@@ -344,12 +358,13 @@ async function handleAreaPage(request, env, c, areaSlug) {
     all = await getAllPublishedCards(c);
   } catch (err) {
     console.error("Area fetch failed:", err.message);
-    return htmlResponse(renderErrorPage(c), 503, env, request);
+    return htmlResponse(renderErrorPage(c, null, await loadChrome(env, request)), 503, env, request);
   }
   const list = all.filter(p => areaMatches(area, p));
   if (!list.length) return notFound(c, env, request, "area");
   const contact = await getSettings(c);
-  const html = renderAreaPage({ c, area, list, contact, allCount: all.length });
+  const chrome = await loadChrome(env, request);
+  const html = renderAreaPage({ c, area, list, contact, allCount: all.length, chrome });
   return htmlResponse(html, 200, env, request, { cache: PAGE_CACHE });
 }
 
@@ -368,6 +383,10 @@ export function detectArea(p) {
    ------------------------------------------------------------------------- */
 async function handleSitemap(request, env, c) {
   const urls = [{ loc: `${c.origin}/`, changefreq: "weekly", priority: "1.0" }];
+  Object.keys(SITE_PAGES).forEach(slug => urls.push({
+    loc: `${c.origin}/${slug}.html`, changefreq: slug === "properties" ? "daily" : "monthly",
+    priority: slug === "properties" ? "0.9" : "0.7"
+  }));
   try {
     const all = await getAllPublishedCards(c);
     all.forEach(p => urls.push({
@@ -556,6 +575,199 @@ export function renderHomepage({ c, template, settings, cards, cardsOk, testimon
     html = html.replace(/(<section\b[^>]*\bid="testimonials"[^>]*?)\s+hidden(\s|>)/, "$1$2");
   }
   return html;
+}
+
+/* -------------------------------------------------------------------------
+   Internal pages (About, Properties, List With Us, Free Valuation,
+   Joint Venture, NRI Services). Each is a static template (/<slug>.html).
+   The header, footer and back-to-top button are NOT written in those
+   files: they are copied from index.html (between the <!--chrome:…-->
+   markers), so every page shares the homepage's exact header and footer.
+   ------------------------------------------------------------------------- */
+export const SITE_PAGES = {
+  about: {
+    label: "About Us", image: "/images/pages/about-hero-1600.jpg", nav: "about",
+    title: "About Us – Real Estate Advisors in Chennai",
+    description: "A founder-led Chennai real estate practice helping buyers, sellers, investors and landowners with clear, professional property advice."
+  },
+  properties: {
+    label: "Properties", image: "/images/pages/properties-hero-1600.jpg", nav: "properties", listings: true,
+    title: "Properties for Sale and Rent in Chennai",
+    description: "Browse homes, land and commercial property to buy or rent across Chennai. Filter by listing type, location, property type, BHK and budget."
+  },
+  "list-with-us": {
+    label: "List With Us", image: "/images/pages/list-with-us-hero-1600.jpg", nav: "list-with-us",
+    title: "List Your Property for Sale or Lease in Chennai",
+    description: "Sell or lease your Chennai property with DGSS Realty: property marketing, screened buyer and tenant enquiries, site visits and transaction support."
+  },
+  "free-valuation": {
+    label: "Free Valuation", image: "/images/pages/free-valuation-hero-1600.jpg", nav: "free-valuation",
+    title: "Free Property Valuation in Chennai",
+    description: "Request a free, no-obligation indicative valuation of your Chennai property, based on location, condition and recent comparable deals."
+  },
+  "joint-venture": {
+    label: "Joint Venture", image: "/images/pages/joint-venture-hero-1600.jpg", nav: "joint-venture",
+    title: "Joint Venture Opportunities for Chennai Landowners",
+    description: "Own land in or around Chennai? Explore joint development with DGSS Realty: land assessment, developer introductions and early JV discussions."
+  },
+  "nri-services": {
+    label: "NRI Services", image: "/images/pages/nri-services-hero-1600.jpg", nav: "nri-services",
+    title: "NRI Property Services in Chennai",
+    description: "Chennai property help for NRIs: property search, site inspections, documentation coordination and local assistance to buy, sell or lease."
+  }
+};
+
+export function extractChrome(indexHtml) {
+  const grab = name => {
+    const m = String(indexHtml || "").match(new RegExp(`<!--chrome:${name}-->([\\s\\S]*?)<!--/chrome:${name}-->`));
+    return m ? m[1] : "";
+  };
+  return { header: grab("header"), footer: grab("footer"), totop: grab("totop") };
+}
+
+/* The homepage's header/footer use in-page links (#about, #contact) and
+   homepage-only behaviour (scroll spy, Buy/Rent/Land filter links). On
+   other pages those become real links, and the current page is marked. */
+const FOOTER_INTENT_LINKS = {
+  buy: "/properties.html?listing=sale",
+  sell: "/list-with-us.html",
+  rent: "/properties.html?listing=rent",
+  land: "/properties.html?listing=land"
+};
+export function chromeForPage(fragment, activeKey) {
+  return String(fragment || "")
+    .replace(/href="#[a-z-]*"\s+data-intent-link="([a-z]+)"/g, (m, k) => `href="${FOOTER_INTENT_LINKS[k] || "/properties.html"}"`)
+    .replace(/\sdata-section="[^"]*"/g, "")
+    .replace(/href="#top"/g, 'href="/"')
+    .replace(/href="#([^"]*)"/g, 'href="/#$1"')
+    .replace(/(\s(?:src|srcset)=")(icons|images)\//g, "$1/$2/")
+    .replace(/\saria-current="page"/g, "")
+    .replace(new RegExp(`data-nav="${activeKey}"`, "g"), `data-nav="${activeKey}" aria-current="page"`);
+}
+
+/* Replaces whatever is between each pair of chrome markers (the copy
+   written into the page file by scripts/sync-chrome.mjs, or nothing) with
+   the current header/footer from index.html. */
+export function injectChrome(template, chrome, activeKey) {
+  return ["header", "footer", "totop"].reduce((html, name) =>
+    html.replace(new RegExp(`<!--chrome:${name}-->[\\s\\S]*?<!--/chrome:${name}-->`),
+      () => `<!--chrome:${name}-->${chromeForPage(chrome[name], activeKey)}<!--/chrome:${name}-->`), template);
+}
+
+async function fetchAssetHtml(env, request, path) {
+  if (!env.ASSETS) return null;
+  let res = await env.ASSETS.fetch(new Request(new URL(path, request.url).toString(), { method: "GET" }));
+  const loc = res.headers.get("Location");
+  if (res.status >= 300 && res.status < 400 && loc) {
+    res = await env.ASSETS.fetch(new Request(new URL(loc, request.url).toString(), { method: "GET" }));
+  }
+  const type = res.headers.get("Content-Type") || "";
+  return res.ok && type.startsWith("text/html") ? res.text() : null;
+}
+
+/* Shared chrome for Worker-rendered pages (property, area, not-found).
+   Falls back to the built-in header in layout() if index.html can't be read. */
+async function loadChrome(env, request) {
+  try {
+    const index = await fetchAssetHtml(env, request, "/index.html");
+    const chrome = index && extractChrome(index);
+    return chrome && chrome.header && chrome.footer ? chrome : null;
+  } catch (err) {
+    console.warn("Shared header/footer unavailable:", err.message);
+    return null;
+  }
+}
+
+export function sitePageSeo(c, s, slug) {
+  const p = SITE_PAGES[slug];
+  return {
+    title: `${p.title} | ${s.company}`,
+    description: p.description,
+    canonical: `${c.origin}/${slug}.html`,
+    image: `${c.origin}${p.image}`
+  };
+}
+
+function sitePageHead(c, s, slug) {
+  const seo = sitePageSeo(c, s, slug);
+  return `
+<title>${esc(seo.title)}</title>
+<meta name="description" content="${esc(seo.description)}">
+<link rel="canonical" href="${esc(seo.canonical)}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="${esc(seo.title)}">
+<meta property="og:description" content="${esc(seo.description)}">
+<meta property="og:image" content="${esc(seo.image)}">
+<meta property="og:url" content="${esc(seo.canonical)}">
+<meta property="og:site_name" content="${esc(s.company)}">
+<meta property="og:locale" content="en_IN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(seo.title)}">
+<meta name="twitter:description" content="${esc(seo.description)}">
+<meta name="twitter:image" content="${esc(seo.image)}">
+`;
+}
+
+function sitePageJsonLd(c, s, slug) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${c.origin}/` },
+      { "@type": "ListItem", position: 2, name: SITE_PAGES[slug].label, item: `${c.origin}/${slug}.html` }
+    ]
+  };
+}
+
+export function renderSitePage({ c, slug, template, chrome, settings, cards = [], cardsOk = true }) {
+  const s = asSettings(settings);
+  const page = SITE_PAGES[slug];
+  const regions = {
+    head: sitePageHead(c, s, slug),
+    jsonld: `\n<script type="application/ld+json">${jsonForScript(sitePageJsonLd(c, s, slug))}</script>\n`
+  };
+  // Same data shape the homepage uses, so js/script.js works unchanged.
+  const data = { settings: publicSettings(s), properties: [], propertiesUnavailable: false };
+  if (page.listings) {
+    const ordered = (cards || []).slice().sort((a, b) =>
+      (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0) ||
+      String(b.created_at || "").localeCompare(String(a.created_at || "")));
+    regions["property-grid"] = !cardsOk
+      ? unavailableListingsHtml(s)
+      : ordered.length
+        ? ordered.slice(0, 24).map(p => renderCard(c, p)).join("")
+        : `<p class="prop-empty">New listings are being added — check back soon, or contact us directly for current inventory.</p>`;
+    data.properties = cardsOk ? ordered : null;
+    data.propertiesUnavailable = !cardsOk;
+  }
+  regions["home-data"] = `<script type="application/json" id="homeData">${jsonForScript(data)}</script>`;
+  return applyCms(injectChrome(template, chrome, page.nav), s, regions);
+}
+
+async function handleSitePage(request, env, c, slug) {
+  const page = SITE_PAGES[slug];
+  const [template, index] = await Promise.all([
+    fetchAssetHtml(env, request, `/${slug}.html`),
+    fetchAssetHtml(env, request, "/index.html")
+  ]);
+  if (!template || !index) return notFound(c, env, request, "page");
+  const [settings, cardsResult] = await Promise.all([
+    getSettings(c),
+    page.listings
+      ? getAllPublishedCards(c).then(rows => ({ ok: true, rows }), err => {
+          console.error("Properties page listings fetch failed:", err.message);
+          return { ok: false, rows: [] };
+        })
+      : { ok: true, rows: [] }
+  ]);
+  const html = renderSitePage({
+    c, slug, template, chrome: extractChrome(index), settings, cards: cardsResult.rows, cardsOk: cardsResult.ok
+  });
+  const res = new Response(request.method === "HEAD" ? null : html, {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": PAGE_CACHE }
+  });
+  return withSecurityHeaders(res, env, request, {});
 }
 
 /* -------------------------------------------------------------------------
@@ -951,8 +1163,8 @@ function json(obj, status = 200) {
 }
 
 async function notFound(c, env, request, kind) {
-  const contact = await getSettings(c);
-  return htmlResponse(renderNotFoundPage({ c, kind, contact }), 404, env, request, { cache: "public, max-age=0, s-maxage=60" });
+  const [contact, chrome] = await Promise.all([getSettings(c), loadChrome(env, request)]);
+  return htmlResponse(renderNotFoundPage({ c, kind, contact, chrome }), 404, env, request, { cache: "public, max-age=0, s-maxage=60" });
 }
 
 function htmlResponse(html, status, env, request, { cache } = {}) {
@@ -966,8 +1178,8 @@ function htmlResponse(html, status, env, request, { cache } = {}) {
 export const CSP = [
   "default-src 'self'",
   "script-src 'self' https://cdn.jsdelivr.net https://challenges.cloudflare.com",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' https://fonts.gstatic.com",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self'",
   "img-src 'self' data: blob: https:",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
   "frame-src https://www.google.com https://maps.google.com https://challenges.cloudflare.com",
@@ -1400,8 +1612,12 @@ function socialLinksHtml(s, cls) {
     `<a href="${esc(s.socials[k])}" target="_blank" rel="noopener" aria-label="${esc(s.company)} on ${label}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">${path}</svg></a>`).join("")}</div>`;
 }
 
-function layout({ c, title, description, canonical, ogImage, ogType = "website", robots, jsonLd = [], body, contact, preview, extraHead = "" }) {
+function layout({ c, title, description, canonical, ogImage, ogType = "website", robots, jsonLd = [], body, contact, preview, extraHead = "", chrome = null, activeNav = "" }) {
   const s = asSettings(contact);
+  // Shared homepage header/footer (see loadChrome); the markup below is
+  // only a fallback for when index.html can't be read.
+  const sharedHeader = chrome ? applyCms(chromeForPage(chrome.header, activeNav), s) : "";
+  const sharedFooter = chrome ? applyCms(chromeForPage(chrome.footer + "\n" + (chrome.totop || ""), activeNav), s) : "";
   const og = ogImage ? absoluteUrl(c, ogImage) : (absoluteUrl(c, toMediaUrl(s.seo.ogImage)) || `${c.origin}${SITE_DEFAULTS.ogImage}`);
   const logo = s.logo || SITE_DEFAULTS.logo;
   return `<!DOCTYPE html>
@@ -1427,9 +1643,8 @@ ${canonical ? `<meta property="og:url" content="${esc(canonical)}">` : ""}
 <meta name="twitter:image" content="${esc(og)}">
 <link rel="icon" type="image/png" href="/icons/dgss-realty-favicon-32.png">
 <link rel="apple-touch-icon" href="/icons/dgss-realty-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/css/style.css">
 <link rel="stylesheet" href="/css/property.css">
 ${extraHead}
@@ -1438,18 +1653,20 @@ ${jsonLd.map(j => `<script type="application/ld+json">${jsonForScript(j)}</scrip
 <body class="subpage">
 <a class="skip-link" href="#main">Skip to content</a>
 ${preview ? `<div class="preview-banner" role="status">PREVIEW — this is how the page will look. It is not public until published.</div>` : ""}
-<header id="siteHeader">
+${sharedHeader || `<header id="siteHeader">
   <div class="container">
     <a href="/" class="brand" aria-label="${esc(s.company)} home">
       <img src="${esc(logo)}" class="brand-logo-img" alt="${esc(s.company)}" width="131" height="44">
     </a>
     <nav class="primary-nav" aria-label="Primary navigation">
       <a href="/">Home</a>
-      <a href="/#about">About Us</a>
-      <a href="/#properties">Properties</a>
-      <a href="/areas/chennai/">Browse by Area</a>
-      <a href="/?open=list-with-us#contact">Sell / List With Us</a>
-      <a href="/#contact">Contact</a>
+      <a href="/about.html">About Us</a>
+      <a href="/properties.html">Properties</a>
+      <a href="/list-with-us.html">List With Us</a>
+      <a href="/free-valuation.html">Free Valuation</a>
+      <a href="/joint-venture.html">Joint Venture</a>
+      <a href="/nri-services.html">NRI Services</a>
+      <a href="/admin/login.html">Admin</a>
     </nav>
     <div class="nav-actions">
       <a class="icon-btn" href="tel:${esc(s.phone)}" aria-label="Call ${esc(s.company)}" data-track="call_click">${icon("phone")}</a>
@@ -1463,21 +1680,23 @@ ${preview ? `<div class="preview-banner" role="status">PREVIEW — this is how t
   <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">${icon("close")}</button>
   <div class="mobile-nav-links">
     <a href="/">Home</a>
-    <a href="/#about">About Us</a>
-    <a href="/#properties">Properties</a>
-    <a href="/areas/chennai/">Browse by Area</a>
-    <a href="/?open=list-with-us#contact">Sell / List With Us</a>
-    <a href="/#contact">Contact</a>
+    <a href="/about.html">About Us</a>
+    <a href="/properties.html">Properties</a>
+    <a href="/list-with-us.html">List With Us</a>
+    <a href="/free-valuation.html">Free Valuation</a>
+    <a href="/joint-venture.html">Joint Venture</a>
+    <a href="/nri-services.html">NRI Services</a>
+    <a href="/admin/login.html">Admin</a>
   </div>
   <div class="mobile-nav-icons">
     <a class="icon-btn" href="tel:${esc(s.phone)}" aria-label="Call ${esc(s.company)}" data-track="call_click">${icon("phone")}</a>
     <a class="icon-btn" href="https://wa.me/${esc(s.whatsapp)}" target="_blank" rel="noopener" aria-label="Chat with ${esc(s.company)} on WhatsApp" data-track="whatsapp_click">${icon("wa")}</a>
   </div>
-</nav>
+</nav>`}
 <main id="main">
 ${body}
 </main>
-<footer>
+${sharedFooter || `<footer>
   <div class="container footer-grid">
     <div class="footer-brand">
       <img src="${esc(logo)}" class="footer-brand-logo-img" alt="${esc(s.company)}" width="131" height="44" loading="lazy">
@@ -1487,8 +1706,8 @@ ${body}
     <div>
       <h2 class="footer-h">Explore</h2>
       <ul>
-        <li><a href="/#about">About Us</a></li>
-        <li><a href="/#properties">Properties</a></li>
+        <li><a href="/about.html">About Us</a></li>
+        <li><a href="/properties.html">Properties</a></li>
         <li><a href="/areas/chennai/">Properties by Area</a></li>
         <li><a href="/?open=list-with-us#contact">Sell Your Property</a></li>
       </ul>
@@ -1507,7 +1726,7 @@ ${body}
     <span>© ${new Date().getFullYear()} DGSS Realty Asset Consulting Services. All rights reserved.</span>
     <span>Buy · Sell · Rent · Invest</span>
   </div>
-</footer>
+</footer>`}
 <script src="/js/common.js" defer></script>
 <script src="/js/property.js" defer></script>
 </body>
@@ -1517,7 +1736,7 @@ ${body}
 /* -------------------------------------------------------------------------
    HTML: property page
    ------------------------------------------------------------------------- */
-export function renderPropertyPage({ c, property: p, contact: rawContact, related, preview, areaLink = null }) {
+export function renderPropertyPage({ c, property: p, contact: rawContact, related, preview, areaLink = null, chrome = null }) {
   const contact = asSettings(rawContact);
   const images = sortedImages(p);
   const canonicalDefault = `${c.origin}/properties/${p.slug}/`;
@@ -1562,7 +1781,7 @@ export function renderPropertyPage({ c, property: p, contact: rawContact, relate
     </div>`;
 
   const statusBanner = closed
-    ? `<div class="pd-status pd-status-closed" role="status">This property has been <strong>${esc(p.status.toLowerCase())}</strong>. It's shown for reference — <a href="/#properties">see available properties</a> or tell us what you're looking for.</div>`
+    ? `<div class="pd-status pd-status-closed" role="status">This property has been <strong>${esc(p.status.toLowerCase())}</strong>. It's shown for reference — <a href="/properties.html">see available properties</a> or tell us what you're looking for.</div>`
     : p.status === "Under Offer"
       ? `<div class="pd-status pd-status-offer" role="status">This property is currently <strong>under offer</strong>. You can still enquire in case it becomes available again.</div>`
       : "";
@@ -1699,7 +1918,7 @@ export function renderPropertyPage({ c, property: p, contact: rawContact, relate
     <section class="pd-related" aria-labelledby="rel-h">
       <h2 id="rel-h">${nearArea && related.some(r => areaMatches(nearArea, r)) ? `Other Properties Near ${esc(nearArea.name)}` : "Other Properties"}</h2>
       <div class="prop-grid">${related.map(r => renderCard(c, r)).join("")}</div>
-      <p class="pd-more"><a class="btn btn-outline dark" href="/#properties">View all properties</a></p>
+      <p class="pd-more"><a class="btn btn-outline dark" href="/properties.html">View all properties</a></p>
     </section>` : ""}
   </div>
 
@@ -1726,7 +1945,7 @@ export function renderPropertyPage({ c, property: p, contact: rawContact, relate
     c, title, description, canonical: preview ? null : canonical, ogImage, ogType: "article",
     robots: preview ? "noindex, nofollow" : null,
     jsonLd: preview ? [] : [listing, breadcrumb],
-    body, contact, preview,
+    body, contact, preview, chrome, activeNav: "properties",
     extraHead: c.turnstileSiteKey ? '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>' : ""
   });
 }
@@ -1761,7 +1980,7 @@ export function renderCard(c, p) {
 /* -------------------------------------------------------------------------
    HTML: area page
    ------------------------------------------------------------------------- */
-export function renderAreaPage({ c, area, list, contact: rawContact, allCount }) {
+export function renderAreaPage({ c, area, list, contact: rawContact, allCount, chrome = null }) {
   const contact = asSettings(rawContact);
   const brand = contact.company;
   const available = list.filter(p => !CLOSED_STATUSES.includes(p.status));
@@ -1811,14 +2030,14 @@ export function renderAreaPage({ c, area, list, contact: rawContact, allCount })
 
   return layout({
     c, title, description, canonical, robots: indexable ? null : "noindex, follow",
-    jsonLd: [breadcrumb, itemList], body, contact
+    jsonLd: [breadcrumb, itemList], body, contact, chrome, activeNav: "properties"
   });
 }
 
 /* -------------------------------------------------------------------------
    HTML: 404 / error
    ------------------------------------------------------------------------- */
-export function renderNotFoundPage({ c, kind, contact: rawContact }) {
+export function renderNotFoundPage({ c, kind, contact: rawContact, chrome = null }) {
   const contact = asSettings(rawContact);
   const heading = kind === "property" ? "Property not found"
     : kind === "area" ? "No listings in this area right now"
@@ -1834,18 +2053,19 @@ export function renderNotFoundPage({ c, kind, contact: rawContact }) {
     <h1>${esc(heading)}</h1>
     <p>${esc(text)}</p>
     <div class="nf-actions">
-      <a class="btn btn-primary" href="/#properties">Browse Properties</a>
+      <a class="btn btn-primary" href="/properties.html">Browse Properties</a>
       <a class="btn btn-outline dark" href="/#hero-services">Search Properties</a>
       <a class="btn btn-outline dark" href="/#contact">Contact ${esc(contact.company)}</a>
     </div>
     <p class="nf-alt">Or call <a href="tel:${esc(contact.phone)}">${esc(contact.phoneDisplay)}</a> / <a href="https://wa.me/${esc(contact.whatsapp)}" target="_blank" rel="noopener">WhatsApp us</a> / <a href="mailto:${esc(contact.email)}">email us</a>.</p>
   </div>`;
-  return layout({ c, title: `${heading} | ${contact.company}`, description: text, canonical: null, robots: "noindex, follow", body, contact });
+  return layout({ c, title: `${heading} | ${contact.company}`, description: text, canonical: null, robots: "noindex, follow", body, contact, chrome, activeNav: kind === "page" ? "" : "properties" });
 }
 
-function renderErrorPage(c, settings) {
+function renderErrorPage(c, settings, chrome = null) {
   const s = asSettings(settings);
   return layout({
+    chrome,
     c: c.origin ? c : cfg({}), title: `Temporarily unavailable | ${s.company}`, description: "Please try again shortly.",
     robots: "noindex", contact: s,
     body: `<div class="container nf"><h1>We'll be right back</h1><p>This page couldn't load just now. Please refresh in a moment, or contact us directly.</p>

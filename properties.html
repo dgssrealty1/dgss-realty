@@ -3,18 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Page not found | DGSS Realty</title>
-<meta name="robots" content="noindex, follow">
+<!-- Title, description, canonical and Open Graph tags are rendered by the
+     Worker (src/app.js SITE_PAGES). The title below is only a fallback. -->
+<!--cms:head-->
+<title>Properties | DGSS Realty</title>
+<!--/cms:head-->
 <link rel="icon" type="image/png" href="/icons/dgss-realty-favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/dgss-realty-icon-192.png">
+<link rel="apple-touch-icon" href="/icons/dgss-realty-icon.png">
 <link rel="preload" href="/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" as="image" type="image/avif" imagesrcset="/images/pages/properties-hero-960.avif 960w, /images/pages/properties-hero-1600.avif 1280w" imagesizes="100vw" fetchpriority="high">
 <link rel="stylesheet" href="/css/style.css">
-<link rel="stylesheet" href="/css/property.css">
+<!--cms:jsonld--><!--/cms:jsonld-->
 </head>
-<body class="subpage">
-<a class="skip-link" href="#main">Skip to content</a>
-<!-- Shared header/footer copied from index.html by scripts/sync-chrome.mjs
-     (npm run sync:chrome) — do not edit them here. -->
+<body class="site-page properties-page">
+<a class="skip-link" href="#page-content">Skip to content</a>
+
+<!-- Shared header, footer and back-to-top button are copied in by the
+     Worker from index.html, so every page matches the homepage. -->
 <!--chrome:header-->
 <header id="siteHeader">
   <div class="container">
@@ -24,7 +31,7 @@
     <nav class="primary-nav" aria-label="Primary navigation">
       <a href="/" data-nav="home">Home</a>
       <a href="/about.html" data-nav="about">About Us</a>
-      <a href="/properties.html" data-nav="properties">Properties</a>
+      <a href="/properties.html" data-nav="properties" aria-current="page">Properties</a>
       <a href="/list-with-us.html" class="nav-link-btn" data-nav="list-with-us">List With Us</a>
       <a href="/free-valuation.html" class="nav-link-btn" data-nav="free-valuation">Free Valuation</a>
       <a href="/joint-venture.html" class="nav-link-btn" data-nav="joint-venture">Joint Venture</a>
@@ -62,7 +69,7 @@
   <div class="mobile-nav-links">
     <a href="/" data-nav="home">Home</a>
     <a href="/about.html" data-nav="about">About Us</a>
-    <a href="/properties.html" data-nav="properties">Properties</a>
+    <a href="/properties.html" data-nav="properties" aria-current="page">Properties</a>
     <a href="/list-with-us.html" class="mobile-nav-links-btn" data-nav="list-with-us">List With Us</a>
     <a href="/free-valuation.html" class="mobile-nav-links-btn" data-nav="free-valuation">Free Valuation</a>
     <a href="/joint-venture.html" class="mobile-nav-links-btn" data-nav="joint-venture">Joint Venture</a>
@@ -88,19 +95,67 @@
   </div>
 </nav>
 <!--/chrome:header-->
-<main id="main" tabindex="-1">
-  <div class="container nf">
-    <p class="nf-code" aria-hidden="true">404</p>
-    <h1>Page not found</h1>
-    <p>The page you're looking for doesn't exist or has moved.</p>
-    <div class="nf-actions">
-      <a class="btn btn-primary" href="/properties.html">Browse Properties</a>
-      <a class="btn btn-outline dark" href="/#hero-services">Search Properties</a>
-      <a class="btn btn-outline dark" href="/#contact">Contact Us</a>
+
+<main id="page-content" tabindex="-1">
+  <!-- ===================== PAGE HERO ===================== -->
+  <section class="page-hero" aria-labelledby="page-title">
+    <picture class="page-hero-media">
+      <source type="image/avif" srcset="/images/pages/properties-hero-960.avif 960w, /images/pages/properties-hero-1600.avif 1280w" sizes="100vw">
+      <source type="image/webp" srcset="/images/pages/properties-hero-960.webp 960w, /images/pages/properties-hero-1600.webp 1280w" sizes="100vw">
+      <img src="/images/pages/properties-hero-1600.jpg" alt="Residential towers in Chennai at dusk" width="1280" height="717" fetchpriority="high" decoding="async">
+    </picture>
+    <div class="page-hero-overlay" aria-hidden="true"></div>
+    <div class="container page-hero-inner">
+      <nav class="page-crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span aria-current="page">Properties</span></nav>
+      <p class="hero-eyebrow">Chennai Properties</p>
+      <h1 id="page-title">Find a Property That Fits Your Needs.</h1>
+      <p class="page-hero-lead">Homes, land and commercial property to buy or rent across Chennai. Narrow it down, then call or WhatsApp us about any listing.</p>
+      <div class="page-hero-ctas">
+        <a href="#properties" class="btn btn-primary">Search Properties</a>
+      </div>
     </div>
-    <p class="nf-alt">Or <a href="/#contact" data-cms-href="tel">call us</a> · <a href="/#contact" data-cms-href="whatsapp" target="_blank" rel="noopener">WhatsApp us</a> · <a href="/#contact" data-cms-href="mailto">email us</a>.</p>
-  </div>
+  </section>
+
+  <!-- ===================== LISTINGS ===================== -->
+  <!-- Same filters and property cards as the homepage (js/script.js);
+       the Worker renders the live listings into #propertyGrid. -->
+  <section class="properties page-listings" id="properties" aria-labelledby="properties-heading">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow">Current Listings</p>
+        <h2 id="properties-heading">Browse Available Properties</h2>
+        <span class="roofline" aria-hidden="true"></span>
+      </div>
+      <div class="prop-filters" id="propFilters" role="search" aria-label="Filter properties">
+              <div class="prop-filter-chips" role="group" aria-label="Listing type">
+                <button type="button" class="prop-chip is-active" data-listing="" aria-pressed="true">All</button>
+                <button type="button" class="prop-chip" data-listing="sale" aria-pressed="false">Buy</button>
+                <button type="button" class="prop-chip" data-listing="rent" aria-pressed="false">Rent / Lease</button>
+                <button type="button" class="prop-chip" data-listing="land" aria-pressed="false">Land</button>
+              </div>
+              <div class="prop-filter-row">
+                <label class="sr-only" for="filterLocation">Area or locality</label>
+                <input type="search" id="filterLocation" placeholder="Area or locality" maxlength="80" autocomplete="off">
+                <label class="sr-only" for="filterType">Property type</label>
+                <select id="filterType"><option value="">Any type</option></select>
+                <label class="sr-only" for="filterBhk">Bedrooms</label>
+                <select id="filterBhk" hidden><option value="">Any BHK</option></select>
+                <label class="sr-only" for="filterBudget">Budget</label>
+                <select id="filterBudget" hidden><option value="">Any budget</option></select>
+                <button type="button" id="filterReset" class="prop-filter-reset" hidden>Clear filters</button>
+              </div>
+              <p class="prop-result-count" id="propResultCount" aria-live="polite"></p>
+            </div>
+            <!-- Live listings are rendered into this grid by the Worker (and kept
+                 in #homeData for the filters in script.js). If the database can't
+                 be reached, a "temporarily unavailable" notice with Call /
+                 WhatsApp buttons is shown — never old or sample listings. -->
+            <div class="prop-grid" id="propertyGrid" aria-live="polite"><!--cms:property-grid--><!--/cms:property-grid--></div>
+            <p class="properties-note">A preview of what's currently available — full inventory shared on request via call or WhatsApp. <a href="/areas/chennai/">Browse properties by area →</a></p>
+    </div>
+  </section>
 </main>
+
 <!--chrome:footer-->
 <footer>
   <div class="container footer-grid">
@@ -162,7 +217,9 @@
   </button>
 </div>
 <!--/chrome:totop-->
+
+<!--cms:home-data--><!--/cms:home-data-->
 <script src="/js/common.js" defer></script>
-<script src="/js/property.js" defer></script>
+<script src="/js/script.js" defer></script>
 </body>
 </html>

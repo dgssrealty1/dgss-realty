@@ -342,7 +342,7 @@ function applyFilters(reason) {
   const count = document.getElementById("propResultCount");
   if (count) {
     count.textContent = filtersActive()
-      ? `${list.length} ${list.length === 1 ? "property" : "properties"} match your filters`
+      ? `${list.length} ${list.length === 1 ? "property matches" : "properties match"} your filters`
       : "";
   }
   if (reason) track(reason, { listing: FILTERS.listing || "all", type: FILTERS.type || "any", bhk: FILTERS.bhk || "any", results: list.length });
@@ -377,6 +377,17 @@ function initFilters() {
 }
 
 function renderProperties() { applyFilters(); }
+
+/* Properties page only: links such as /properties.html?listing=rent
+   (footer Buy / Rent / Land) open with that filter already applied. */
+function filtersFromUrl() {
+  if (!document.body.classList.contains("properties-page")) return;
+  const q = new URLSearchParams(window.location.search);
+  const listing = q.get("listing");
+  if (["sale", "rent", "land"].includes(listing)) FILTERS.listing = listing;
+  const location = (q.get("location") || "").trim().slice(0, 80);
+  if (location) FILTERS.location = location;
+}
 
 function renderPropertyGridBatch() {
   const grid = document.getElementById("propertyGrid");
@@ -980,6 +991,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else {
       PROPERTIES = HOME.properties.map(mapRow);
       buildFilterOptions();
+      filtersFromUrl();
       applyFilters();
     }
     return;

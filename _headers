@@ -11,21 +11,21 @@
 # Public site pages. The only inline <script> blocks are JSON-LD data,
 # which CSP does not execute. Google Maps is the office-location iframe.
 /
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com https://maps.google.com https://challenges.cloudflare.com; form-action 'self' mailto:; base-uri 'self'; object-src 'none'; frame-ancestors 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com https://maps.google.com https://challenges.cloudflare.com; form-action 'self' mailto:; base-uri 'self'; object-src 'none'; frame-ancestors 'self'
 
 /index.html
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com https://maps.google.com https://challenges.cloudflare.com; form-action 'self' mailto:; base-uri 'self'; object-src 'none'; frame-ancestors 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com https://maps.google.com https://challenges.cloudflare.com; form-action 'self' mailto:; base-uri 'self'; object-src 'none'; frame-ancestors 'self'
 
 # 404 fills its contact links from /api/site-settings (same origin) and
 # may show an uploaded logo (https).
 /404.html
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'
   X-Robots-Tag: noindex
 
 # Admin: never framed, never indexed, no inline script at all.
 /admin/*
   ! X-Frame-Options
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: ; connect-src 'self' https://*.supabase.co wss://*.supabase.co; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https: ; connect-src 'self' https://*.supabase.co wss://*.supabase.co; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'
   X-Frame-Options: DENY
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store
@@ -41,3 +41,7 @@
 
 /js/*
   Cache-Control: public, max-age=3600
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *

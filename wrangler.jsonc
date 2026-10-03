@@ -21,6 +21,13 @@
       "/index.html",
       "/properties",
       "/properties/*",
+      "/properties.html",
+      // Internal pages (template + shared header/footer from index.html).
+      "/about", "/about/", "/about.html",
+      "/list-with-us", "/list-with-us/", "/list-with-us.html",
+      "/free-valuation", "/free-valuation/", "/free-valuation.html",
+      "/joint-venture", "/joint-venture/", "/joint-venture.html",
+      "/nri-services", "/nri-services/", "/nri-services.html",
       "/areas",
       "/areas/*",
       "/sitemap.xml",

@@ -1,0 +1,18 @@
+# Files that must never be published as website assets.
+.git
+.github
+.gitignore
+.DS_Store
+**/.DS_Store
+.wrangler
+.dev.vars*
+.env*
+node_modules
+src
+supabase
+tests
+package.json
+package-lock.json
+wrangler.jsonc
+*.md
+_headers.test

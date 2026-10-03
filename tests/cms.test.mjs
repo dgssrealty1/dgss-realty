@@ -7,7 +7,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import app, {
   cfg, renderPropertyPage, renderAreaPage, renderNotFoundPage, AREAS, seoTitle, seoDescription,
-  canonicalFor, priceText, toMediaUrl, parseMediaPath, postalAddress, _resetCacheVersionMemo
+  canonicalFor, priceText, toMediaUrl, parseMediaPath, postalAddress, _resetCacheVersionMemo,
+  SITE_PAGES, extractChrome, chromeForPage
 } from "../src/app.js";
 import { normalizeSettings, applyCms, telHref, waDigits } from "../src/cms.js";
 import { SITE_DEFAULTS } from "../src/site-defaults.js";
@@ -92,6 +93,11 @@ const assetsEnv = (extra = {}, html = INDEX) => {
         if (u.pathname === "/index.html" || u.pathname === "/") {
           return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", ETag: '"static-etag"' } });
         }
+        const pageFile = u.pathname.match(/^\/([a-z-]+)\.html$/);
+        if (pageFile && fs.existsSync(new URL(`../${pageFile[1]}.html`, import.meta.url))) {
+          return new Response(fs.readFileSync(new URL(`../${pageFile[1]}.html`, import.meta.url), "utf8"),
+            { headers: { "Content-Type": "text/html; charset=utf-8" } });
+        }
         return new Response("asset", { headers: { "Content-Type": "text/plain" } });
       }
     },
@@ -116,7 +122,7 @@ test("CMS hero: Admin heading / subheading / CTA appear on the real homepage", a
   assert.match(html, /<h1 id="hero-heading" data-cms-html="hero_heading">Hero line one<br><span class="accent">Hero accent line<\/span><\/h1>/);
   assert.match(html, /data-cms-text="hero_subheading">Subheading from Admin\.<\/p>/);
   assert.match(html, /data-cms-text="hero_cta">See Listings<\/a>/);
-  assert.doesNotMatch(html, /Find your next property\./, "built-in hero text replaced");
+  assert.doesNotMatch(html, /Discover the Right Property/, "built-in hero text replaced");
 });
 
 test("CMS hero: change → save → revert is reflected (blank keeps built-in text)", async () => {
@@ -124,7 +130,7 @@ test("CMS hero: change → save → revert is reflected (blank keeps built-in te
   assert.match(html, /data-cms-html="hero_heading">Changed heading<\/h1>/);
   _resetCacheVersionMemo();
   ({ html } = await home({ settings: { ...SETTINGS, hero_heading: "", hero_subheading: null, hero_cta_text: "" } }));
-  assert.match(html, /Find your next property\.<br><span class="accent">With trusted guidance\.<\/span>/);
+  assert.match(html, /data-cms-html="hero_heading"><span class="hero-h1-part">Discover the Right Property.<\/span> <span class="hero-h1-part">Make the Right Deal.<\/span><\/h1>/);
   assert.match(html, /data-cms-text="hero_cta">Explore Properties<\/a>/);
 });
 
@@ -513,4 +519,168 @@ test("Staff invite: service key only used server-side for the invite; role grant
   const grant = calls.find(x => x.url.includes("add_staff_by_email"));
   assert.equal(grant.init.headers.Authorization, "Bearer super");
   assert.equal(grant.init.headers.apikey, c.anonKey, "role grant uses the public key + caller session, not the service key");
+});
+
+
+/* ---------------- internal pages ---------------- */
+const page = async (path, opts = {}) => {
+  const m = mock(opts);
+  const r = await app.fetch(req(path), assetsEnv());
+  return { r, html: r.status === 200 ? await r.text() : "", ...m };
+};
+const SLUGS = ["about", "properties", "list-with-us", "free-valuation", "joint-venture", "nri-services"];
+
+test("internal pages: 200, own SEO tags, one H1, shared header + footer, active nav", async () => {
+  const titles = new Set();
+  for (const slug of SLUGS) {
+    const { r, html } = await page(`/${slug}.html`);
+    assert.equal(r.status, 200, slug);
+    assert.equal((html.match(/<h1\b/g) || []).length, 1, `${slug}: exactly one H1`);
+    assert.ok(html.includes(`<link rel="canonical" href="${ORIGIN}/${slug}.html">`), `${slug}: canonical`);
+    assert.ok(html.includes(`<meta property="og:image" content="${ORIGIN}${SITE_PAGES[slug].image}">`), `${slug}: og:image`);
+    assert.ok(fs.existsSync(new URL(`..${SITE_PAGES[slug].image}`, import.meta.url)), `${slug}: og image exists`);
+    const title = html.match(/<title>([^<]*)<\/title>/)[1];
+    assert.ok(!titles.has(title), `${slug}: unique title`); titles.add(title);
+    assert.ok(html.includes('<header id="siteHeader">') && html.includes('id="mobileNav"'), `${slug}: header`);
+    assert.ok(html.includes("<footer>") && html.includes('class="wa-float"') && html.includes('id="toTop"'), `${slug}: footer`);
+    assert.equal((html.match(/aria-current="page"/g) || []).length, 3, `${slug}: desktop + mobile nav + breadcrumb`);
+    assert.ok(html.includes(`data-nav="${SITE_PAGES[slug].nav}" aria-current="page"`));
+    assert.ok(html.includes('href="tel:+919000011111"'), `${slug}: Admin phone in header`);
+    assert.ok(!/href="#(?!enquiry|properties|page-content)/.test(html), `${slug}: no homepage-only #links`);
+    assert.ok(!html.includes("data-intent-link") && !html.includes("data-section="), `${slug}: no homepage-only behaviour`);
+    assert.ok(html.includes('class="page-hero"') && html.includes(`/images/pages/${slug}-hero-1600.jpg`), `${slug}: hero image`);
+    assert.ok(!html.includes("Join Venture"));
+  }
+});
+
+test("internal pages: header and footer are byte-for-byte the homepage's (apart from links)", async () => {
+  const chrome = extractChrome(INDEX);
+  assert.ok(chrome.header.includes("primary-nav") && chrome.footer.includes("<footer>") && chrome.totop.includes("toTop"));
+  const { html } = await page("/joint-venture.html");
+  const strip = h => applyCms(chromeForPage(h, ""), normalizeSettings(SETTINGS)).replace(/\s+aria-current="page"/g, "");
+  assert.ok(html.replace(/\s+aria-current="page"/g, "").includes(strip(chrome.footer)));
+});
+
+test("internal pages: forms are the homepage forms (same ids, required fields, honeypot)", async () => {
+  const forms = { "list-with-us": ["listWithUsForm", "listWithUsSuccess", ["lw-name", "lw-mobile", "lw-type", "lw-location"]],
+    "free-valuation": ["valuationForm", "valuationSuccess", ["fv-name", "fv-mobile", "fv-location"]],
+    "joint-venture": ["jointVentureForm", "jointVentureSuccess", ["jv-name", "jv-phone", "jv-location"]],
+    "nri-services": ["nriForm", "nriSuccess", ["nri-name", "nri-mobile", "nri-email", "nri-country", "nri-requirement"]] };
+  for (const [slug, [form, success, ids]] of Object.entries(forms)) {
+    const { html } = await page(`/${slug}.html`);
+    const start = INDEX.indexOf(`<form id="${form}"`);
+    const original = applyCms(INDEX.slice(start, INDEX.indexOf("</form>", start)), normalizeSettings(SETTINGS)).replace(/\s+/g, " ");
+    assert.ok(html.replace(/\s+/g, " ").includes(original), `${slug}: form copied verbatim`);
+    assert.ok(html.includes(`id="${success}"`) && html.includes('name="website"'));
+    ids.forEach(id => assert.ok(html.includes(`id="${id}"`), `${slug}: ${id}`));
+  }
+  const fv = (await page("/free-valuation.html")).html;
+  assert.ok(/not a certified, government-approved or legally binding valuation/.test(fv));
+});
+
+test("properties page: live listings, homepage filters, no drafts; About keeps the founder section", async () => {
+  const { html } = await page("/properties.html");
+  assert.equal((html.match(/class="prop-card/g) || []).length, 2);
+  assert.ok(html.includes('id="propFilters"') && html.includes('data-listing="rent"'));
+  const data = homeData(html);
+  assert.equal(data.properties.length, 2);
+  const about = (await page("/about.html")).html;
+  assert.ok(about.includes('<section class="founder" id="founder"'));
+  assert.ok(about.includes("/media/site-media/founder/photo.jpg"), "founder photo from Admin");
+  const down = await page("/properties.html", { down: { properties: true } });
+  assert.equal(down.r.status, 200);
+});
+
+test("internal pages: short URLs redirect; sitemap lists every page", async () => {
+  for (const [from, to] of [["/about", "/about.html"], ["/about/", "/about.html"], ["/properties", "/properties.html"],
+    ["/properties/", "/properties.html"], ["/NRI-Services.html", "/nri-services.html"]]) {
+    mock();
+    const r = await app.fetch(req(from), assetsEnv());
+    assert.equal(r.status, 301, from);
+    assert.equal(r.headers.get("Location"), `${ORIGIN}${to}`, from);
+  }
+  mock();
+  const xml = await (await app.fetch(req("/sitemap.xml"), assetsEnv())).text();
+  SLUGS.forEach(slug => assert.ok(xml.includes(`<loc>${ORIGIN}/${slug}.html</loc>`), slug));
+});
+
+test("homepage: unchanged sections, nav now opens the dedicated pages", async () => {
+  const { html } = await home();
+  for (const id of ["about", "properties", "why", "founder", "contact", "listWithUsModal", "valuationModal", "jointVentureModal", "nriModal", "sectionDots", "heroSearchForm"]) {
+    assert.ok(html.includes(`id="${id}"`), id);
+  }
+  ["about", "properties", "list-with-us", "free-valuation", "joint-venture", "nri-services"].forEach(slug =>
+    assert.equal((html.match(new RegExp(`href="/${slug}\\.html" (?:class="[^"]*" )?data-nav="${slug}"`, "g")) || []).length, 2, slug));
+  assert.ok(!html.includes('aria-current="page"'));
+});
+
+test("property and area pages use the shared homepage header and footer", async () => {
+  mock();
+  const r = await app.fetch(req("/properties/2bhk-flat-nandanam/"), assetsEnv());
+  const html = await r.text();
+  assert.equal(r.status, 200);
+  assert.ok(html.includes('data-nav="properties" aria-current="page"'));
+  assert.ok(html.includes('href="/free-valuation.html"') && html.includes('class="wa-float"'));
+  assert.ok(html.includes('src="/media/site-media/branding/logo-new.png"'), "Admin logo");
+  mock({ properties: [PROP, { ...PROP2, location: "Nandanam" }] });
+  const a = await app.fetch(req("/areas/nandanam/"), assetsEnv());
+  if (a.status === 200) assert.ok((await a.text()).includes('data-nav="properties" aria-current="page"'));
+});
+
+/* ---------------- 404 + hero copy ---------------- */
+test("404.html carries the homepage header/footer (in sync with index.html)", async () => {
+  const { syncedHtml } = await import("../scripts/sync-chrome.mjs");
+  const nf = fs.readFileSync(new URL("../404.html", import.meta.url), "utf8");
+  assert.equal(nf, syncedHtml(nf, INDEX, ""), "run: npm run sync:chrome");
+  assert.ok(nf.includes('<header id="siteHeader">') && nf.includes('id="mobileNav"') && nf.includes("<footer>") && nf.includes('class="wa-float"'));
+  assert.equal((nf.match(/<header\b/g) || []).length, 1);
+  assert.equal((nf.match(/<footer\b/g) || []).length, 1);
+  assert.ok(!/href="#(?!main")/.test(nf) && !nf.includes("data-intent-link") && !nf.includes('src="icons/'));
+  assert.ok(nf.includes('src="/js/property.js"'), "mobile menu script");
+});
+
+test("Worker-rendered 404 uses the shared header/footer", async () => {
+  mock();
+  const r = await app.fetch(req("/properties/does-not-exist/"), assetsEnv());
+  const html = await r.text();
+  assert.equal(r.status, 404);
+  assert.equal((html.match(/<header\b/g) || []).length, 1);
+  assert.ok(html.includes('data-nav="nri-services"') && html.includes('class="wa-float"'));
+});
+
+test("hero: two-sentence headline renders one span per sentence; single sentence unchanged", async () => {
+  const { heroHeadingHtml } = await import("../src/cms.js");
+  assert.equal(heroHeadingHtml("Discover the Right Property. Make the Right Deal."),
+    '<span class="hero-h1-part">Discover the Right Property.</span> <span class="hero-h1-part">Make the Right Deal.</span>');
+  assert.equal(heroHeadingHtml("Find your next property."), "Find your next property.");
+  assert.equal(heroHeadingHtml("Line one\nAccent"), 'Line one<br><span class="accent">Accent</span>');
+  assert.ok(INDEX.includes("Discover the Right Property.") && INDEX.includes("Verified properties. Trusted guidance. Better real estate decisions across Chennai."));
+  assert.ok(INDEX.includes("Chennai&rsquo;s Trusted Real Estate Consultants"));
+});
+
+test("every public page file contains the global header and footer (synced from index.html)", async () => {
+  const { syncedHtml, CHROME_PAGES } = await import("../scripts/sync-chrome.mjs");
+  assert.deepEqual(Object.keys(CHROME_PAGES).sort(),
+    ["404.html", "about.html", "free-valuation.html", "joint-venture.html", "list-with-us.html", "nri-services.html", "properties.html"]);
+  const { header, footer } = extractChrome(INDEX);
+  for (const [file, key] of Object.entries(CHROME_PAGES)) {
+    const html = fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+    assert.equal(html, syncedHtml(html, INDEX, key), `${file} is out of date — run: npm run sync:chrome`);
+    assert.equal((html.match(/<header id="siteHeader">/g) || []).length, 1, `${file}: one header`);
+    assert.equal((html.match(/<footer>/g) || []).length, 1, `${file}: one footer`);
+    // Order: header → page content → footer
+    const h = html.indexOf('<header id="siteHeader">'), m = html.indexOf("<main"), f = html.indexOf("<footer>");
+    assert.ok(h > 0 && h < m && m < f, `${file}: header, main, footer order`);
+    assert.equal(html.slice(html.indexOf("<!--chrome:footer-->")).includes(chromeForPage(footer, key)), true, `${file}: footer matches index.html`);
+    assert.ok(html.includes(chromeForPage(header, key)), `${file}: header matches index.html`);
+  }
+});
+
+test("Worker serves every internal page with exactly one header and footer, even from a synced template", async () => {
+  for (const slug of SLUGS) {
+    const { html } = await page(`/${slug}.html`);
+    assert.equal((html.match(/<header id="siteHeader">/g) || []).length, 1, slug);
+    assert.equal((html.match(/<footer>/g) || []).length, 1, slug);
+    assert.ok(html.includes('href="tel:+919000011111"'), `${slug}: live Admin settings applied`);
+  }
 });

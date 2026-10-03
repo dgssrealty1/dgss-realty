@@ -135,6 +135,7 @@
       case "email": return s.email || "";
       case "address": return s.address || "";
       case "hours": return s.hours || "";
+      case "year": return String(new Date().getFullYear());
       default: return null;
     }
   }
@@ -167,6 +168,12 @@
       if (!v) el.hidden = true;
     });
   }
+
+  // Footer year on static pages (the Worker fills it on rendered pages).
+  const fillYear = () => document.querySelectorAll('[data-cms-text="year"]').forEach(el => {
+    if (!el.textContent.trim()) el.textContent = String(new Date().getFullYear());
+  });
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fillYear); else fillYear();
 
   let siteSettingsReady = Promise.resolve(null);
   const embedded = document.getElementById("homeData") || document.getElementById("pageData");

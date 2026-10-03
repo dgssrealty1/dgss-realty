@@ -16,9 +16,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icons/dgss-realty-icon-192.png">
 <link rel="apple-touch-icon" href="icons/dgss-realty-icon.png">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 
 <link rel="preload" as="image" type="image/avif" imagesrcset="/images/hero-new/hero-apartment-960.avif 960w, /images/hero-new/hero-apartment.avif 1280w" imagesizes="100vw" fetchpriority="high">
 <link rel="stylesheet" href="css/style.css">
@@ -30,20 +29,23 @@
 <a class="skip-link" href="#main-content">Skip to content</a>
 
 <!-- ===================== HEADER ===================== -->
+<!-- Shared header + mobile menu: the Worker copies everything between the
+     chrome:header markers onto every internal page, so edit it only here. -->
+<!--chrome:header-->
 <header id="siteHeader">
   <div class="container">
     <a href="#top" class="brand" aria-label="DGSS Realty home" data-cms-alt="company">
       <img src="icons/dgss-realty-logo-262.png" class="brand-logo-img" alt="DGSS Realty" width="131" height="44" data-cms-src="logo" data-cms-alt="company">
     </a>
     <nav class="primary-nav" aria-label="Primary navigation">
-      <a href="#top" data-section="top">Home</a>
-      <a href="#about" data-section="about">About Us</a>
-      <a href="#properties" data-section="properties">Properties</a>
-      <button type="button" class="nav-link-btn" data-open-modal="listWithUsModal">List With Us</button>
-      <button type="button" class="nav-link-btn" data-open-modal="valuationModal">Free Valuation</button>
-      <button type="button" class="nav-link-btn" data-open-modal="jointVentureModal">Join Venture</button>
-      <button type="button" class="nav-link-btn" data-open-modal="nriModal">NRI Services</button>
-      <a href="/admin/login.html">Admin</a>
+      <a href="#top" data-section="top" data-nav="home">Home</a>
+      <a href="/about.html" data-nav="about">About Us</a>
+      <a href="/properties.html" data-nav="properties">Properties</a>
+      <a href="/list-with-us.html" class="nav-link-btn" data-nav="list-with-us">List With Us</a>
+      <a href="/free-valuation.html" class="nav-link-btn" data-nav="free-valuation">Free Valuation</a>
+      <a href="/joint-venture.html" class="nav-link-btn" data-nav="joint-venture">Joint Venture</a>
+      <a href="/nri-services.html" class="nav-link-btn" data-nav="nri-services">NRI Services</a>
+      <a href="/admin/login.html" data-nav="admin">Admin</a>
     </nav>
     <div class="nav-actions">
       <a class="icon-btn" href="#contact" data-cms-href="tel" aria-label="Call us" title="Call us" data-track="call_click">
@@ -74,14 +76,14 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
   </button>
   <div class="mobile-nav-links">
-    <a href="#top" data-section="top">Home</a>
-    <a href="#about" data-section="about">About Us</a>
-    <a href="#properties" data-section="properties">Properties</a>
-    <button type="button" class="mobile-nav-links-btn" data-open-modal="listWithUsModal">List With Us</button>
-    <button type="button" class="mobile-nav-links-btn" data-open-modal="valuationModal">Free Valuation</button>
-    <button type="button" class="mobile-nav-links-btn" data-open-modal="jointVentureModal">Join Venture</button>
-    <button type="button" class="mobile-nav-links-btn" data-open-modal="nriModal">NRI Services</button>
-    <a href="/admin/login.html">Admin</a>
+    <a href="#top" data-section="top" data-nav="home">Home</a>
+    <a href="/about.html" data-nav="about">About Us</a>
+    <a href="/properties.html" data-nav="properties">Properties</a>
+    <a href="/list-with-us.html" class="mobile-nav-links-btn" data-nav="list-with-us">List With Us</a>
+    <a href="/free-valuation.html" class="mobile-nav-links-btn" data-nav="free-valuation">Free Valuation</a>
+    <a href="/joint-venture.html" class="mobile-nav-links-btn" data-nav="joint-venture">Joint Venture</a>
+    <a href="/nri-services.html" class="mobile-nav-links-btn" data-nav="nri-services">NRI Services</a>
+    <a href="/admin/login.html" data-nav="admin">Admin</a>
   </div>
   <div class="mobile-nav-icons">
     <a class="icon-btn" href="#contact" data-cms-href="tel" aria-label="Call us" title="Call us" data-track="call_click">
@@ -101,6 +103,7 @@
     </a>
   </div>
 </nav>
+<!--/chrome:header-->
 
 <main id="top">
   <span id="main-content" tabindex="-1"></span>
@@ -148,9 +151,9 @@
     <div class="hero-content">
       <div class="container hero-inner">
         <div class="hero-copy">
-          <p class="hero-eyebrow">Chennai's Trusted Real Estate Consultants</p>
-          <h1 id="hero-heading" data-cms-html="hero_heading">Find your next property.<br><span class="accent">With trusted guidance.</span></h1>
-          <p class="lead" data-cms-text="hero_subheading">DGSS Realty connects buyers, sellers, landlords and investors with the right property opportunities across Chennai. We provide transparent guidance, verified listings and end-to-end support for residential, commercial, land and rental properties.</p>
+          <p class="hero-eyebrow">Chennai&rsquo;s Trusted Real Estate Consultants</p>
+          <h1 id="hero-heading" data-cms-html="hero_heading"><span class="hero-h1-part">Discover the Right Property.</span> <span class="hero-h1-part">Make the Right Deal.</span></h1>
+          <p class="lead" data-cms-text="hero_subheading">Verified properties. Trusted guidance. Better real estate decisions across Chennai.</p>
           <div class="hero-ctas">
             <a href="#properties" class="btn btn-primary" data-cms-text="hero_cta">Explore Properties</a>
             <a href="#contact" data-cms-href="whatsapp" target="_blank" rel="noopener" class="btn btn-outline" data-track="whatsapp_click">Chat on WhatsApp</a>
@@ -190,7 +193,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             </span>
             <label for="heroLocationInput" class="sr-only">Search by location</label>
-            <input type="search" id="heroLocationInput" name="location" placeholder="Search by area, e.g. Nandanam" autocomplete="off" maxlength="80">
+            <input type="search" id="heroLocationInput" name="location" placeholder="Search area (e.g. Adyar)" autocomplete="off" maxlength="80">
             <button type="submit" class="hero-search-btn" aria-label="Search properties by location">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
               <span>Search</span>
@@ -502,6 +505,7 @@
 </main>
 
 <!-- ===================== FOOTER ===================== -->
+<!--chrome:footer-->
 <footer>
   <div class="container footer-grid">
     <div class="footer-brand">
@@ -553,6 +557,7 @@
 <a class="wa-float" href="#contact" data-cms-href="whatsapp" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp" data-track="whatsapp_click">
   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11 11 0 0 0 3.6 17.7L2 22l4.4-1.6A11 11 0 1 0 20.5 3.5zM12 20a8 8 0 0 1-4.1-1.1l-.3-.2-3 1.1.9-2.9-.2-.3A8 8 0 1 1 12 20zm4.4-5.9c-.2-.1-1.4-.7-1.6-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.6.1a6.5 6.5 0 0 1-1.9-1.2 7.1 7.1 0 0 1-1.3-1.6c-.1-.2 0-.4.1-.5s.2-.3.4-.4.2-.2.3-.4a.5.5 0 0 0 0-.5c-.1-.1-.6-1.5-.8-2s-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3 1 2.6 1.1 2.8s2 3 4.7 4.2a8 8 0 0 0 1.7.6 3.6 3.6 0 0 0 1.7.1 2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .1-1.3c-.1-.1-.2-.2-.5-.3z"/></svg>
 </a>
+<!--/chrome:footer-->
 
 <!-- ===================== SECTION DOT NAVIGATION ===================== -->
 <!-- Fixed, vertically-centered right-side navigator. initSectionDots() in
@@ -586,12 +591,14 @@
   </button>
 </nav>
 
+<!--chrome:totop-->
 <div class="totop-ring" id="toTopRing">
   <button class="totop" id="toTop" aria-label="Back to top">
     <svg class="totop-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 11l6-6 6 6"/></svg>
     <span class="totop-bar" aria-hidden="true"></span>
   </button>
 </div>
+<!--/chrome:totop-->
 
 <!-- ===================== LIST WITH US MODAL ===================== -->
 <div class="property-modal" id="listWithUsModal" role="dialog" aria-modal="true" aria-labelledby="listWithUsTitle" aria-hidden="true">
