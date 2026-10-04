@@ -52,6 +52,25 @@ export function safeUrl(v) {
   return "";
 }
 const safeHttps = v => { const s = safeUrl(v); return s.startsWith("https://") ? s : ""; };
+
+/* Exact coordinates from a full Google Maps place link (Share → open the
+   short link → copy the address-bar URL). The place pin ("!3d<lat>!4d<lng>")
+   wins over the map-view centre ("@<lat>,<lng>"); "?q=<lat>,<lng>" also
+   works. Short maps.app.goo.gl links carry no coordinates → null. */
+export function mapCoords(link) {
+  const u = safeHttps(link);
+  if (!u || !/^https:\/\/(www\.)?(google\.[a-z.]+|maps\.google\.[a-z.]+)\//i.test(u)) return null;
+  const num = "(-?\\d{1,3}\\.\\d+)";
+  const m = u.match(new RegExp(`!3d${num}!4d${num}`)) || u.match(new RegExp(`@${num},${num}`)) ||
+    u.match(new RegExp(`[?&](?:q|query|ll)=${num},(?:%20|\\+)?${num}(?:&|$)`));
+  if (!m) return null;
+  const lat = Number(m[1]), lng = Number(m[2]);
+  return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat: m[1], lng: m[2] } : null;
+}
+export function mapEmbedUrl(coords, address) {
+  if (coords) return `https://maps.google.com/maps?q=${coords.lat},${coords.lng}&z=17&output=embed`;
+  return address ? `https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=16&output=embed` : "";
+}
 const validEmail = v => { const s = clean(v); return /^[^@\s<>"']+@[^@\s<>"']+\.[a-z]{2,}$/i.test(s) ? s : ""; };
 
 /* Indian 10-digit mobiles get +91; anything else keeps its country code. */
@@ -88,7 +107,9 @@ export function normalizeSettings(raw) {
     hours: clean(r.office_hours),
     // The admin's own map link wins; otherwise a search for the address.
     mapsUrl: safeHttps(r.google_maps_url) || (address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : ""),
-    mapEmbed: address ? `https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=16&output=embed` : "",
+    // Exact pin from the admin's Google Maps link when it carries
+    // coordinates; otherwise the map searches for the address text.
+    mapEmbed: mapEmbedUrl(mapCoords(r.google_maps_url), address),
     logo: safeUrl(r.logo_url) || D.logo,
     socials: {
       instagram: safeHttps(r.instagram_url),
