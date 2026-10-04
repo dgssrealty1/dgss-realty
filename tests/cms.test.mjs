@@ -684,3 +684,19 @@ test("Worker serves every internal page with exactly one header and footer, even
     assert.ok(html.includes('href="tel:+919000011111"'), `${slug}: live Admin settings applied`);
   }
 });
+
+/* ---------------- map location ---------------- */
+test("map: exact pin from a full Google Maps link; short links fall back to the address", async () => {
+  const { mapCoords, normalizeSettings: ns } = await import("../src/cms.js");
+  const full = "https://www.google.com/maps/place/Karpagambal+Kripa+Apartments,+23,+Bazaar+St,+KK+Nagar+West,+Chennai+600078/@13.0391769,80.1912363,17z/data=!3m1!4b1!4m6!3m5!1s0x3a5267e28af620e5:0x495b2a147529f988!8m2!3d13.0391769!4d80.1912363!16s%2Fg%2F11q868dfgs";
+  assert.deepEqual(mapCoords(full), { lat: "13.0391769", lng: "80.1912363" });
+  assert.equal(mapCoords("https://maps.app.goo.gl/KdwGfGXGaPNtYA37A"), null);
+  assert.equal(mapCoords("https://example.com/@13.03,80.19"), null, "only Google Maps links");
+  const s = ns({ ...SETTINGS, google_maps_url: full });
+  assert.equal(s.mapEmbed, "https://maps.google.com/maps?q=13.0391769,80.1912363&z=17&output=embed");
+  assert.equal(s.mapsUrl, full, "Office links open the same place");
+  assert.match(ns(SETTINGS).mapEmbed, /q=12%20Test%20Street/, "short/blank link: address search as before");
+  const { html } = await home({ settings: { ...SETTINGS, google_maps_url: full } });
+  assert.ok(html.includes('src="https://maps.google.com/maps?q=13.0391769,80.1912363&amp;z=17&amp;output=embed"') ||
+            html.includes('src="https://maps.google.com/maps?q=13.0391769,80.1912363&z=17&output=embed"'));
+});
